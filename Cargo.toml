@@ -1,0 +1,51 @@
+[package]
+name = "Exchange"
+version = "0.1.0"
+authors = ["Brad Duncan <bradkyleduncan@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+# Layered configuration system for Rust applications
+dotenv = "0.9.0"
+config = "0.9"
+
+# Extra iterator adaptors, functions and macros.
+itertools = "0.8"
+
+# Serde is a framework for serializing and deserializing
+# Rust data structures efficiently and generically.
+serde_derive = "^1.0.8"
+serde = "^1.0.8"
+
+# RKDB is used to implement KDB+/Q "the worlds fastest time series DB"
+# RKDB fails to install on fresh install: rustup override set nightly
+rkdb = {version="0.4", features=["api"]}
+
+# Crossbeam used for concurrent programming
+crossbeam = "0.7"
+crossbeam-queue = "0.2"
+crossbeam-utils = "0.7"
+crossbeam-epoch = "0.8"
+crossbeam-channel = "0.4"
+
+# Slog is an ecosystem of reusable components for structured,
+# extensible, composable and contextual logging for Rust.
+
+
+# Rayon is a data-parallelism library for Rust.
+rayon = "1.3.0"
+
+# A safe, extensible ORM and Query Builder for Rust
+diesel = { version = "1.4.3", features = ["postgres"] }
+
+# Command Line Argument Parser for Rust
+clap = { git = "https://github.com/clap-rs/clap/" }
+
+# Actix web is a simple, pragmatic and extremely fast web
+# framework for Rust.
+actix-web = "2"
+actix-rt = "1"
+actix-protobuf = "0.5.1"
