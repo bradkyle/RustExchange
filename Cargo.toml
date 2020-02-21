@@ -40,6 +40,9 @@ rayon = "1.3.0"
 
 # A safe, extensible ORM and Query Builder for Rust
 diesel = { version = "1.4.3", features = ["postgres"] }
+diesel_codegen = { version = "0.8.0", features = ["postgres"] }
+
+hyper = { version = "0.9", default-features = false, features = ["security-framework"] }
 
 # Command Line Argument Parser for Rust
 clap = { git = "https://github.com/clap-rs/clap/" }
