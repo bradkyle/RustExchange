@@ -1,4 +1,5 @@
-
+This is a proof of concept derivatives exchange and as such has not been split into
+microservices on account of brevity.
 
 Tech Stack:
 

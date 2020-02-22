@@ -1,0 +1,80 @@
+
+CREATE TYPE direction AS ENUM ('ask', 'bid');
+CREATE TYPE funding_method AS ENUM ('periodic', 'continuous', 'adaptive');
+CREATE TYPE fair_method AS ENUM ('mark', 'protected');
+
+CREATE TABLE instruments (
+  id SERIAL PRIMARY KEY,
+  symbol VARCHAR NOT NULL UNIQUE,
+  root_symbol VARCHAR NOT NULL UNIQUE,
+  margin_asset VARCHAR NOT NULL,
+  underlying_asset VARCHAR NOT NULL,
+  reference VARCHAR NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expiry TIMESTAMP NOT NULL,
+  settle TIMESTAMP NOT NULL,
+  relist_interval INTERVAL NOT NULL,
+  calc_interval INTERVAL NOT NULL,
+  publish_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  publish_interval INTERVAL NOT NULL,
+
+  lot_size SMALLINT NOT NULL,
+  tick_size FLOAT NOT NULL,
+  init_margin FLOAT NOT NULL,
+  maint_margin FLOAT NOT NULL,
+  risk_limit INT NOT NULL,
+  risk_step INT NOT NULL,
+  inherent_limit FLOAT NOT NULL,
+  max_size FLOAT NOT NULL,
+  max_order_qty INT NOT NULL,
+  multiplier INT NOT NULL,
+  underlying_to_position_multiplier INT NOT NULL,
+  underlying_to_settle_multiplier INT NOT NULL,
+
+  is_quanto BOOLEAN NOT NULL DEFAULT FALSE,
+  is_inverse BOOLEAN NOT NULL DEFAULT FALSE,
+  is_capped BOOLEAN NOT NULL DEFAULT FALSE,
+  is_taxed BOOLEAN NOT NULL DEFAULT FALSE,
+  is_deleveraged BOOLEAN NOT NULL DEFAULT TRUE,
+
+  maker_fee FLOAT NOT NULL,
+  taker_fee FLOAT NOT NULL,
+  routing_fee FLOAT NOT NULL,
+  insurance_fee FLOAT NOT NULL,
+  settlement_fee FLOAT NOT NULL,
+
+  lifetime_volume INT NOT NULL,
+  prev_total_volume INT NOT NULL,
+  total_volume INT NOT NULL,
+  volume INT NOT NULL,
+  volume_24h INT NOT NULL,
+  prev_total_turnover INT NOT NULL,
+  total_turnover INT NOT NULL,
+
+  home_notional_24h FLOAT NOT NULL,
+  foreign_notional_24h FLOAT NOT NULL,
+  prev_price_24h FLOAT NOT NULL,
+  vwap FLOAT NOT NULL,
+  high_price FLOAT NOT NULL,
+  low_price FLOAT NOT NULL,
+  last_price FLOAT NOT NULL,
+  last_price_protected FLOAT NOT NULL,
+  last_tick_direction direction NOT NULL,
+  last_change_pcnt FLOAT NOT NULL,
+  bid_price FLOAT NOT NULL,
+  ask_price FLOAT NOT NULL,
+  mid_price FLOAT NOT NULL,
+  impact_bid_price FLOAT NOT NULL,
+  impact_ask_price FLOAT NOT NULL,
+  impact_mid_price FLOAT NOT NULL,
+  open_interest INT NOT NULL,
+  open_value INT NOT NULL,
+
+  has_liquidity BOOLEAN NOT NULL DEFAULT FALSE,
+
+  funding_method_type funding_method NOT NULL DEFAULT FALSE,
+  fair_method_type funding_method NOT NULL DEFAULT FALSE,
+)
+
+SELECT diesel_manage_updated_at('users');
