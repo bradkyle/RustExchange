@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use super::{DbExecutor, PooledConn};
 use crate::app::instruments::{
-    InstrumentListResponse, InstrumentResponse, InstrumentResponseInner, CreateInstrumentOuter, CancelInstrument,
+    InstrumentListResponse, InstrumentResponse, InstrumentResponseInner,
     GetInstrument, GetInstruments
 };
 use crate::app::profiles::ProfileResponseInner;

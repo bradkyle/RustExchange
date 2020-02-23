@@ -10,7 +10,7 @@ use crate::app::orders::{
     GetOrder, GetOrders
 };
 use crate::models::{
-    Order, AmendOrder, NewTrade, NewOrder, User,
+    Order, UpdateOrder, CreateOrder, User,
 };
 use crate::prelude::*;
 use crate::utils::CustomDateTime;
@@ -26,36 +26,41 @@ impl Message for CreateOrder {
 }
 
 // Implement request handlers
-impl Handler<CreateOrder> for DbExecutor {
+impl Handler<NewOrder> for DbExecutor {
     type Result = Result<OrderResponse>;
 
-    fn handle(&mut self, msg: CreateOrder, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: NewOrder, _: &mut Self::Context) -> Self::Result {
         use crate::schema::orders;
 
         let conn = &self.0.get()?;
 
-        let author = msg.auth.user;
+        let user = msg.auth.user;
+        let instrument = msg.instrument
 
         // Generating the Uuid here since it will help make a unique slug
         // This is for when some orders may have similar titles such that they generate the same slug
         let new_order_id = Uuid::new_v4();
-        let slug = generate_slug(&new_order_id, &msg.order.title);
 
         let new_order = NewOrder {
             id: new_order_id,
-            author_id: author.id,
-            slug,
-            title: msg.order.title,
-            description: msg.order.description,
-            body: msg.order.body,
+            user_id: user.id,
+            account_id: msg.order.account_id,
+            instrument_id: msg.order.instrument_id,
+            side: msg.order.side,
+            initial_qty:msg.order.qty,
+            leaves_qty:msg.order.leaves_qty,
+            price: msg.order.price
         };
+
         let order = diesel::insert_into(orders::table)
             .values(&new_order)
             .get_result::<Order>(conn)?;
 
-        let _ = replace_tags(order.id, msg.order.tag_list, conn)?;
-
-        get_order_response(order.slug, Some(order.author_id), conn)
+        get_order_response(
+            order.id,
+            Some(order.user_id),
+            conn
+        )
     }
 }
 
@@ -200,11 +205,6 @@ impl Handler<GetOrders> for DbExecutor {
     }
 }
 
-// local helper methods ↓
-
-fn generate_slug(uuid: &Uuid, title: &str) -> String {
-    format!("{}-{}", to_blob(uuid), slugify(title))
-}
 
 // This will reduce the amount of boilerplate when an OrderResponse is needed
 fn get_order_response(
@@ -214,37 +214,22 @@ fn get_order_response(
 ) -> Result<OrderResponse> {
     use crate::schema::{orders, users};
 
-    let (order, author) = orders::table
-        .inner_join(users::table)
-        .filter(orders::slug.eq(slug))
-        .get_result::<(Order, User)>(conn)?;
-
-    let (favorited, following) = match user_id {
-        Some(user_id) => get_favorited_and_following(order.id, author.id, user_id, conn)?,
-        None => (false, false),
-    };
-
-    let favorites_count = get_favorites_count(order.id, conn)?;
-
-    let tags = select_tags_on_order(order.id, conn)?;
+    let order = orders::table
+        .filter(orders::id.eq(id))
+        .get_result::<(Order)>(conn)?;
 
     Ok(OrderResponse {
         order: OrderResponseInner {
-            slug: order.slug,
-            title: order.title,
-            description: order.description,
-            body: order.body,
-            tag_list: tags,
+            id: order.id,
+            user_id: order.user_id,
+            account_id: order.account_id,
+            instrument_id: order.instrument_id,
+            side: order.side,
+            initial_qty: order.initial_qty,
+            leaves_qty: order.leaves_qty,
+            price: order.price,
             created_at: CustomDateTime(order.created_at),
             updated_at: CustomDateTime(order.updated_at),
-            favorited,
-            favorites_count,
-            author: ProfileResponseInner {
-                username: author.username,
-                bio: author.bio,
-                image: author.image,
-                following,
-            },
         },
     })
 }
@@ -254,10 +239,11 @@ fn get_order_list_response(
     user_id: Option<Uuid>,
     conn: &PooledConn,
 ) -> Result<OrderListResponse> {
+
     let order_list = orders
         .iter()
         .map(
-            |order| match get_order_response(order.slug.to_owned(), user_id, conn) {
+            |order| match get_order_response(order.id.to_owned(), user_id, conn) {
                 Ok(response) => Ok(response.order),
                 Err(e) => Err(e),
             },

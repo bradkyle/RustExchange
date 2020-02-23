@@ -12,9 +12,10 @@ pub struct Order {
     pub account_id: Uuid,
     pub instrument_id: Uuid,
     pub side: String,
-    pub initial_qty: i64,
-    pub leaves_qty: i64,
-    pub price: f64,
+    pub status: String,
+    pub initial_qty: i32,
+    pub leaves_qty: i32,
+    pub price: f32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -23,17 +24,18 @@ pub struct Order {
 #[table_name = "orders"]
 pub struct NewOrder {
     pub id: Uuid,
-    pub account_id: Uuid,
+    pub user_id: Uuid,
     pub instrument_id: Uuid,
     pub side: String,
-    pub initial_qty: i64,
-    pub price: f64,
+    pub initial_qty: i32,
+    pub leaves_qty: i32,
+    pub price: f32,
 }
 
 #[derive(Debug, AsChangeset)]
 #[table_name = "orders"]
-pub struct AmendOrder {
+pub struct UpdateOrder {
     pub side: String,
-    pub leaves_qty: i64,
-    pub price: f64,
+    pub leaves_qty: i32,
+    pub price: f32,
 }

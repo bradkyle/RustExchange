@@ -12,7 +12,18 @@ actix-service = "0.4.2"
 actix-http = "0.2.10"
 blob-uuid = "0.3.0"
 chrono = "0.4.6"
-diesel = { version = "1.4.2", features = ["chrono", "postgres", "r2d2", "uuidv07", "serde_json"] }
+diesel = { version = "1.4.2", features = [
+ "chrono",
+ "postgres",
+ "r2d2",
+ "uuidv07",
+ "serde_json",
+ "numeric",
+]}
+num-bigint = "0.2.6"
+bigdecimal = "0.1.0"
+ipnetwork = "0.16.0"
+num-integer = "0.1.42"
 diesel-derive-enum = { version = "0.4", features = ["postgres"] }
 dotenv = "0.14.1"
 env_logger = "0.6.1"

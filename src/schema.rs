@@ -15,7 +15,7 @@ table! {
 }
 
 table! {
-    instrumets (id) {
+    instruments (id) {
         id -> Uuid,
         symbol -> Varchar,
         maker_fee -> Float,
@@ -38,9 +38,9 @@ table! {
         open_order_buy_qty -> Float,
         open_order_buy_cost -> Float,
         open_order_buy_premium -> Float,
-        open_order_buy_qty -> Float,
-        open_order_buy_cost -> Float,
-        open_order_buy_premium -> Float,
+        open_order_sell_qty -> Float,
+        open_order_sell_cost -> Float,
+        open_order_sell_premium -> Float,
         opening_qty -> Integer,
         avg_entry_price -> Float,
         current_qty -> Integer,
@@ -68,7 +68,7 @@ table! {
         order_id -> Uuid,
         instrument_id -> Uuid,
         exec_qty -> Integer,
-        price -> Float,
+        price -> BigDecimal,
         created_at -> Timestamp,
     }
 }
@@ -109,12 +109,12 @@ table! {
 }
 
 // TODO update
-joinable!(article_tags -> articles (article_id));
-joinable!(articles -> users (author_id));
-joinable!(comments -> articles (article_id));
-joinable!(comments -> users (user_id));
-joinable!(favorite_articles -> articles (article_id));
-joinable!(favorite_articles -> users (user_id));
+// joinable!(article_tags -> articles (article_id));
+// joinable!(articles -> users (author_id));
+// joinable!(comments -> articles (article_id));
+// joinable!(comments -> users (user_id));
+// joinable!(favorite_articles -> articles (article_id));
+// joinable!(favorite_articles -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     orders,

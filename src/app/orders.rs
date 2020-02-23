@@ -19,79 +19,57 @@ pub struct In<T> {
 
 #[derive(Debug, Deserialize)]
 pub struct OrderPath {
-    pub slug: String,
+    pub id: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct OrdersParams {
-    pub tag: Option<String>,
-    pub author: Option<String>,
-    pub favorited: Option<String>,
-    pub limit: Option<usize>,  // <- if not set, is 20
-    pub offset: Option<usize>, // <- if not set, is 0
-}
-
-#[derive(Debug, Deserialize)]
-pub struct FeedParams {
-    pub limit: Option<usize>,
-    pub offset: Option<usize>,
+    // TODO
 }
 
 // Client Messages ↓
 
 #[derive(Debug, Validate, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NewOrder {
+pub struct NewOrderRequest {
     #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub title: String,
-    #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub description: String,
-    #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub body: String,
-    #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub tag_list: Vec<String>,
+    pub id:
 }
 
 #[derive(Debug)]
-pub struct NewOrderOuter {
+pub struct NewOrderRequestOuter {
     pub auth: Auth,
+    pub instrument_id: String,
     pub order: NewOrder,
 }
 
 #[derive(Debug)]
-pub struct GetOrder {
+pub struct GetOrderRequest {
     pub auth: Option<Auth>,
-    pub slug: String,
+    pub id: String,
 }
 
 #[derive(Debug, Validate, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AmendOrder {
-    #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub title: Option<String>,
-    #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub description: Option<String>,
-    #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub body: Option<String>,
-    #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub tag_list: Option<Vec<String>>,
+pub struct AmendOrderRequest {
+    // TODO
 }
 
 #[derive(Debug)]
-pub struct AmendOrderOuter {
+pub struct AmendOrderRequestOuter {
     pub auth: Auth,
-    pub slug: String,
+    pub id: String,
     pub order: AmendOrder,
 }
 
 #[derive(Debug)]
-pub struct CancelOrder {
-    pub auth: Auth,
+pub struct CancelOrderRequest {
+    pub id: Auth,
     pub slug: String,
 }
 
 #[derive(Debug)]
-pub struct GetOrders {
+pub struct GetOrdersRequest {
     pub auth: Option<Auth>,
     pub params: OrdersParams,
 }
@@ -143,7 +121,12 @@ pub fn create(
     result(order.validate())
         .from_err()
         .and_then(move |_| authenticate(&state, &req))
-        .and_then(move |auth| orderbook.send(NewOrderOuter { auth, order }).from_err()) // TODO send to matching engine
+        .and_then(move |auth| orderbook.send(
+            NewOrderRequestOuter {
+                auth,
+                order
+            }
+        ).from_err()) // TODO send to matching engine
         .and_then(|res| match res {
             Ok(res) => Ok(HttpResponse::Ok().json(res)),
             Err(e) => Ok(e.error_response()),
@@ -161,9 +144,9 @@ pub fn get(
 
     authenticate(&state, &req)
         .then(move |auth| {
-            db.send(GetOrder {
+            db.send(GetOrderRequest {
                 auth: auth.ok(),
-                slug: path.slug.to_owned(),
+                id: path.id.to_owned(),
             })
             .from_err()
         })
@@ -181,7 +164,7 @@ pub fn amend(
     state: Data<AppState>,
     (path, form, req): (
         Path<OrderPath>,
-        Json<In<AmendOrder>>,
+        Json<In<AmendOrderRequest>>,
         HttpRequest,
     ),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
@@ -194,9 +177,9 @@ pub fn amend(
         .and_then(move |_| authenticate(&state, &req))
         .and_then(move |auth| {
             // TODO send to orderbook, orderbook then internally updates order on account of queue state
-            orderbook.send(AmendOrderOuter {
+            orderbook.send(AmendOrderRequestOuter {
                 auth,
-                slug: path.slug.to_owned(),
+                id: path.id.to_owned(),
                 order,
             })
             .from_err()
@@ -220,9 +203,9 @@ pub fn cancel(
 
     authenticate(&state, &req)
         .and_then(move |auth| {
-                orderbook.send(CancelOrder {
+                orderbook.send(CancelOrderRequest {
                     auth,
-                    slug: path.slug.to_owned(),
+                    id: path.id.to_owned(),
                 })
                 .from_err()
         })
@@ -242,7 +225,7 @@ pub fn list(
 
     authenticate(&state, &req)
         .then(move |auth| {
-            db.send(GetOrders {
+            db.send(GetOrdersRequest {
                 auth: auth.ok(),
                 params: params.into_inner(),
             })

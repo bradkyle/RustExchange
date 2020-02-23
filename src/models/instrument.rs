@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use uuid::Uuid;
 
-use crate::schema::{articles, favorite_articles};
+use crate::schema::{instruments};
 
 #[derive(Debug, Queryable, Identifiable)]
 pub struct Instrument {
