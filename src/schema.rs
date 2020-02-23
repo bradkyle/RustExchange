@@ -74,7 +74,7 @@ table! {
 }
 
 table! {
-    account (id, user_id, follower_id) {
+    accounts (id, user_id, follower_id) {
         id -> Uuid,
         user_id -> Uuid,
         intrument_id -> Uuid,
@@ -108,6 +108,7 @@ table! {
     }
 }
 
+// TODO update
 joinable!(article_tags -> articles (article_id));
 joinable!(articles -> users (author_id));
 joinable!(comments -> articles (article_id));
@@ -116,10 +117,10 @@ joinable!(favorite_articles -> articles (article_id));
 joinable!(favorite_articles -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
-    articles,
-    article_tags,
-    comments,
-    favorite_articles,
-    followers,
+    orders,
+    instruments,
+    positions,
+    trades,
+    accounts,
     users,
 );

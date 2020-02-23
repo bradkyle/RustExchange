@@ -27,6 +27,8 @@ fn index(_state: Data<AppState>, _req: HttpRequest) -> &'static str {
 pub fn start() {
     let frontend_origin = env::var("FRONTEND_ORIGIN").ok();
 
+    // TODO load configuration
+
     // Instantiate db
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let database_pool = new_pool(database_url).expect("Failed to create pool.");
@@ -35,7 +37,7 @@ pub fn start() {
     let bind_address = env::var("BIND_ADDRESS").expect("BIND_ADDRESS is not set");
 
     // Instantiate orderbook
-    let orderbook_adddress = SyncArbiter::start(Orderbook());
+    let orderbook_adddress = OrderBook::Start();
 
     let state = Data::new(AppState {
         db: database_address.clone(),
@@ -81,7 +83,7 @@ fn main() {
 
     let sys = actix::System::new("conduit");
 
-    app::start();
+    start();
 
     let _ = sys.run();
 }

@@ -13,7 +13,7 @@ struct OrderIndex {
     order_side: OrderSide,
 }
 
-// TODO change to faster hashmap and pointers in orderbook
+// TODO change to faster hashmap and Binary heap & pointers in orderbook
 
 // Arrange at first by price and after that by time
 impl Ord for OrderIndex {
