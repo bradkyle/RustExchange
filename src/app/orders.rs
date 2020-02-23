@@ -41,7 +41,7 @@ pub struct FeedParams {
 
 #[derive(Debug, Validate, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateOrder {
+pub struct NewOrder {
     #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
     pub title: String,
     #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
@@ -53,9 +53,9 @@ pub struct CreateOrder {
 }
 
 #[derive(Debug)]
-pub struct CreateOrderOuter {
+pub struct NewOrderOuter {
     pub auth: Auth,
-    pub order: CreateOrder,
+    pub order: NewOrder,
 }
 
 #[derive(Debug)]
@@ -130,7 +130,7 @@ pub struct OrderListResponse {
 
 // After the order has been validated, the user making
 // the order has been authenticated and no errors have
-// occurred a CreateOrderOuter request (Outer signifying
+// occurred a NewOrderOuter request (Outer signifying
 // that it requires authentication) is sent to the orderbook
 // whereby it will subsequently update the state.
 pub fn create(
@@ -143,7 +143,7 @@ pub fn create(
     result(order.validate())
         .from_err()
         .and_then(move |_| authenticate(&state, &req))
-        .and_then(move |auth| orderbook.send(CreateOrderOuter { auth, order }).from_err()) // TODO send to matching engine
+        .and_then(move |auth| orderbook.send(NewOrderOuter { auth, order }).from_err()) // TODO send to matching engine
         .and_then(|res| match res {
             Ok(res) => Ok(HttpResponse::Ok().json(res)),
             Err(e) => Ok(e.error_response()),

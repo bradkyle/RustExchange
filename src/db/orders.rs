@@ -10,22 +10,26 @@ use crate::app::orders::{
     GetOrder, GetOrders
 };
 use crate::models::{
-    Order, OrderAmend, NewTrade, NewOrder, User,
+    Order, AmendOrder, NewTrade, NewOrder, User,
 };
 use crate::prelude::*;
 use crate::utils::CustomDateTime;
 
 // message handler implementations ↓
 
-impl Message for CreateOrderOuter {
+// CreateOrder is a message handler that is used internally
+// for the passing of created orders predominantly from the
+// orderbook to the database. The OrderBook implements functionality
+// for handling direct requests from the api etc.
+impl Message for CreateOrder {
     type Result = Result<OrderResponse>;
 }
 
 // Implement request handlers
-impl Handler<CreateOrderOuter> for DbExecutor {
+impl Handler<CreateOrder> for DbExecutor {
     type Result = Result<OrderResponse>;
 
-    fn handle(&mut self, msg: CreateOrderOuter, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: CreateOrder, _: &mut Self::Context) -> Self::Result {
         use crate::schema::orders;
 
         let conn = &self.0.get()?;
@@ -72,14 +76,22 @@ impl Handler<GetOrder> for DbExecutor {
     }
 }
 
-impl Message for AmendOrderOuter {
+// UpdateOrder is a message handler that is used internally
+// for the passing of order updates predominantly from the
+// orderbook whereby orders can be amended or matched
+// to the database. The OrderBook implements functionality
+// for handling direct requests from the api etc.
+// Consequentially an UpdateOrder event is also used by
+// the orderbook to cancel orders i.e. by changing
+// their status.
+impl Message for UpdateOrder {
     type Result = Result<OrderResponse>;
 }
 
-impl Handler<AmendOrderOuter> for DbExecutor {
+impl Handler<UpdateOrder> for DbExecutor {
     type Result = Result<OrderResponse>;
 
-    fn handle(&mut self, msg: AmendOrderOuter, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: UpdateOrder, _: &mut Self::Context) -> Self::Result {
         use crate::schema::orders;
 
         let conn = &self.0.get()?;
@@ -122,39 +134,6 @@ impl Handler<AmendOrderOuter> for DbExecutor {
         };
 
         get_order_response(order.slug, Some(order.author_id), conn)
-    }
-}
-
-impl Message for CancelOrder {
-    type Result = Result<()>;
-}
-
-impl Handler<CancelOrder> for DbExecutor {
-    type Result = Result<()>;
-
-    fn handle(&mut self, msg: CancelOrder, _: &mut Self::Context) -> Self::Result {
-        use crate::schema::orders;
-
-        let conn = &self.0.get()?;
-
-        let order = orders::table
-            .filter(orders::slug.eq(msg.slug))
-            .get_result::<Order>(conn)?;
-
-        if msg.auth.user.id != order.author_id {
-            return Err(Error::Forbidden(json!({
-                "error": "user is not the author of order in question",
-            })));
-        }
-
-        delete_tags(order.id, conn)?;
-
-        delete_favorites(order.id, conn)?;
-
-        match diesel::delete(orders::table.filter(orders::id.eq(order.id))).execute(conn) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.into()),
-        }
     }
 }
 
