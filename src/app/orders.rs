@@ -66,7 +66,7 @@ pub struct GetOrder {
 
 #[derive(Debug, Validate, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateOrder {
+pub struct AmendOrder {
     #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
     pub title: Option<String>,
     #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
@@ -78,14 +78,14 @@ pub struct UpdateOrder {
 }
 
 #[derive(Debug)]
-pub struct UpdateOrderOuter {
+pub struct AmendOrderOuter {
     pub auth: Auth,
     pub slug: String,
-    pub order: UpdateOrder,
+    pub order: AmendOrder,
 }
 
 #[derive(Debug)]
-pub struct DeleteOrder {
+pub struct CancelOrder {
     pub auth: Auth,
     pub slug: String,
 }
@@ -128,19 +128,22 @@ pub struct OrderListResponse {
 
 // Route handlers ↓
 
-// Recieves hhtp/grpc/fix input orders and
-// verifies them before routing to the orderbook.
+// After the order has been validated, the user making
+// the order has been authenticated and no errors have
+// occurred a CreateOrderOuter request (Outer signifying
+// that it requires authentication) is sent to the orderbook
+// whereby it will subsequently update the state.
 pub fn create(
     state: Data<AppState>,
     (form, req): (Json<In<CreateOder>>, HttpRequest),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let order = form.into_inner().order;
-    let db = state.db.clone();
+    let orderbook = state.orderbook.clone();
 
     result(order.validate())
         .from_err()
         .and_then(move |_| authenticate(&state, &req))
-        .and_then(move |auth| db.send(CreateOrderOuter { auth, order }).from_err()) // TODO send to matching engine
+        .and_then(move |auth| orderbook.send(CreateOrderOuter { auth, order }).from_err()) // TODO send to matching engine
         .and_then(|res| match res {
             Ok(res) => Ok(HttpResponse::Ok().json(res)),
             Err(e) => Ok(e.error_response()),
@@ -148,7 +151,8 @@ pub fn create(
 }
 
 // Seen as though updates are pushed from the orderbook
-// and matching engine to the db, get updates from db
+// and matching engine to the db this function can bypass
+// the orderbook and retrieve an order directly from the db.
 pub fn get(
     state: Data<AppState>,
     (path, req): (Path<OrderPath>, HttpRequest),
@@ -169,26 +173,28 @@ pub fn get(
         })
 }
 
-// TODO change to amend
-// Updates an order, this can be used by the
-pub fn update(
+// Cancel sends a AmendOrder request to the orderbook
+// agent which in turn modifies the state of the orderbook
+// and orderqueue and subsequently updates the database state
+// thereafter.
+pub fn amend(
     state: Data<AppState>,
     (path, form, req): (
         Path<OrderPath>,
-        Json<In<UpdateOrder>>,
+        Json<In<AmendOrder>>,
         HttpRequest,
     ),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let order = form.into_inner().order;
 
-    let db = state.db.clone();
+    let orderbook = state.orderbook.clone();
 
     result(order.validate())
         .from_err()
         .and_then(move |_| authenticate(&state, &req))
         .and_then(move |auth| {
             // TODO send to orderbook, orderbook then internally updates order on account of queue state
-            db.send(UpdateOrderOuter {
+            orderbook.send(AmendOrderOuter {
                 auth,
                 slug: path.slug.to_owned(),
                 order,
@@ -201,16 +207,20 @@ pub fn update(
         })
 }
 
-// TODO change to cancel
-pub fn delete(
+// Cancel sends a CancelOrder request to the orderbook
+// agent which in turn modifies the state of the orderbook
+// and orderqueue and subsequently updates the database state
+// thereafter.
+pub fn cancel(
     state: Data<AppState>,
     (path, req): (Path<OrderPath>, HttpRequest),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
+
+    let orderbook = state.orderbook.clone();
+
     authenticate(&state, &req)
         .and_then(move |auth| {
-            state
-                .db
-                .send(DeleteOrder {
+                orderbook.send(CancelOrder {
                     auth,
                     slug: path.slug.to_owned(),
                 })
@@ -222,7 +232,8 @@ pub fn delete(
         })
 }
 
-// Lists Orders that belong to a user
+// After the user has been authenticated, A GetOrders
+// request will be sent to the db bypassing the orderbook
 pub fn list(
     state: Data<AppState>,
     (req, params): (HttpRequest, Query<OrdersParams>),
