@@ -82,27 +82,27 @@ pub struct AccountResponseInner {
     pub updated_at: CustomDateTime,
     pub favorited: bool,
     pub favorites_count: usize,
-    pub author: ProfileResponseInner,
+    pub author: AccountResponseInner,
 }
 
+// TODO lists all base asset accounts that are available
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PositionListResponse {
-    pub positions: Vec<PositionResponseInner>,
-    pub positions_count: usize,
+pub struct AccountListResponse {
+    pub accounts: Vec<AccountResponseInner>,
 }
 
 // Route handlers ↓
 
 pub fn get(
     state: Data<AppState>,
-    (path, req): (Path<PositionPath>, HttpRequest),
+    (path, req): (Path<AccountPath>, HttpRequest),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let db = state.db.clone();
 
     authenticate(&state, &req)
         .then(move |auth| {
-            db.send(GetPosition {
+            db.send(GetAccount {
                 auth: auth.ok(),
                 slug: path.slug.to_owned(),
             })
@@ -117,24 +117,24 @@ pub fn get(
 pub fn update(
     state: Data<AppState>,
     (path, form, req): (
-        Path<PositionPath>,
-        Json<In<UpdatePosition>>,
+        Path<AccountPath>,
+        Json<In<UpdateAccount>>,
         HttpRequest,
     ),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
-    let position = form.into_inner().position;
+    let account = form.into_inner().account;
 
     let db = state.db.clone();
 
-    result(position.validate())
+    result(account.validate())
         .from_err()
         .and_then(move |_| authenticate(&state, &req))
         .and_then(move |auth| {
             // TODO send to orderbook, orderbook then internally updates order on account of queue state
-            db.send(UpdatePositionOuter {
+            db.send(UpdateAccountOuter {
                 auth,
                 slug: path.slug.to_owned(),
-                position,
+                account,
             })
             .from_err()
         })
@@ -145,16 +145,16 @@ pub fn update(
 }
 
 
-// Lists Positions that belong to a user
+// Lists Accounts that belong to a user
 pub fn list(
     state: Data<AppState>,
-    (req, params): (HttpRequest, Query<PositionsParams>),
+    (req, params): (HttpRequest, Query<AccountsParams>),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let db = state.db.clone();
 
     authenticate(&state, &req)
         .then(move |auth| {
-            db.send(GetPositions {
+            db.send(GetAccounts {
                 auth: auth.ok(),
                 params: params.into_inner(),
             })

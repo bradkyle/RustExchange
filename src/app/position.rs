@@ -84,7 +84,7 @@ pub struct PositionResponseInner {
     pub updated_at: CustomDateTime,
     pub favorited: bool,
     pub favorites_count: usize,
-    pub author: ProfileResponseInner,
+    pub author: PositionResponseInner,
 }
 
 #[derive(Debug, Serialize)]
