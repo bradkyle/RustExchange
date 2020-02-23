@@ -23,10 +23,10 @@ impl Message for NewOrderOuter {
 
 // Implement request handlers
 // TODO
-impl Handler<NewMarketOrderOuter> for OrderBook {
+impl Handler<NewOrderOuter> for OrderBook {
     type Result = Result<OrderResponse>;
 
-    fn handle(&mut self, msg: NewMarketOrderOuter, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: NewOrderOuter, _: &mut Self::Context) -> Self::Result {
         use crate::schema::orders;
 
         let user = msg.auth.user;
@@ -44,47 +44,24 @@ impl Handler<NewMarketOrderOuter> for OrderBook {
             body: msg.order.body,
         };
 
-        let order = diesel::insert_into(orders::table)
-            .values(&new_order)
-            .get_result::<Order>(conn)?;
+        // TODO
+        // Process new orders differently based on their type
+        // if an order is a limit order it will be added to
+        // the order queue. If an order is a market order
+        // the orderbook will attempt to match it with opposing
+        // limit orders.
+        match order.order_type{
+            OrderType::Market => self.process_market_order(
 
-        self.process_market_order(
+            ),
+            OrderType::Limit => self.process_limit_order(
 
-        );
+            )
+        }
 
-    }
-}
-
-// Implement request handlers
-// TODO
-impl Handler<NewLimitOrderOuter> for OrderBook {
-    type Result = Result<OrderResponse>;
-
-    fn handle(&mut self, msg: NewLimitOrderOuter, _: &mut Self::Context) -> Self::Result {
-        use crate::schema::orders;
-
-        let user = msg.auth.user;
-
-        // Generating the Uuid here since it will help make a unique slug
-        // This is for when some orders may have similar titles such that they generate the same slug
-        let new_order_id = Uuid::new_v4();
-
-        let new_order = NewOrder {
-            id: new_order_id,
-            author_id: author.id,
-            slug,
-            title: msg.order.title,
-            description: msg.order.description,
-            body: msg.order.body,
-        };
-
-        let order = diesel::insert_into(orders::table)
-            .values(&new_order)
-            .get_result::<Order>(conn)?;
-
-        self.process_market_order(
-
-        );
+        // The isertion into the database is handled by a seperate
+        // actor.
+        // TODO send create order message to actor
 
     }
 }
@@ -99,33 +76,20 @@ impl Handler<AmendOrderOuter> for OrderBook {
     fn handle(&mut self, msg: AmendOrderOuter, _: &mut Self::Context) -> Self::Result {
         use crate::schema::orders;
 
-        let conn = &self.0.get()?;
-
         let order = orders::table
-            .filter(orders::slug.eq(msg.slug))
-            .get_result::<Order>(conn)?;
 
-        if msg.auth.user.id != order.author_id {
+        if msg.auth.user.id != order.user_id {
             return Err(Error::Forbidden(json!({
                 "error": "user is not the owner of order in question",
             })));
         }
 
-        let slug = match &msg.order.title {
-            Some(title) => Some(generate_slug(&order.id, &title)),
-            None => None,
-        };
-
-        let order_change = OrderChange {
+        let order_amend = OrderAmend {
             slug,
             title: msg.order.title,
             description: msg.order.description,
             body: msg.order.body,
         };
-
-        let order = diesel::update(orders::table.find(order.id))
-            .set(&order_change)
-            .get_result::<Order>(conn)?;
 
 
     }

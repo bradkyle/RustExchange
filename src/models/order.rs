@@ -8,6 +8,7 @@ use crate::schema::{orders};
 #[derive(Debug, Queryable, Identifiable)]
 pub struct Order {
     pub id: Uuid,
+    pub user_id: Uuid,
     pub account_id: Uuid,
     pub instrument_id: Uuid,
     pub side: String,

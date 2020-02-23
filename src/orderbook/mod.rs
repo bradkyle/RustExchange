@@ -1,5 +1,3 @@
-mod
-
 use actix::prelude::*;
 use blob_uuid::to_blob;
 use diesel::prelude::*;
@@ -26,8 +24,8 @@ struct OrderBook {
 
 impl OrderBook {
     pub fn new(
-        max_stalled_indicies_in_queue,
-        order_queue_init_capacity
+        max_stalled_indicies_in_queue: u64,
+        order_queue_init_capacity: usize,
     ) -> Self {
         Orderbook {
             bid_queue: OrderQueue::new(

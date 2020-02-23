@@ -1,5 +1,26 @@
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate failure;
+extern crate jsonwebtoken as jwt;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
+#[macro_use]
+extern crate validator_derive;
+
+mod api;
+mod db;
+mod orderbook;
+
+use crate::api::{routes};
 use crate::db::{new_pool, DbExecutor};
-use crate::orderbook::{}
+
+// use crate::orderbook::{OrderBook};
+
 use actix::prelude::{Addr, SyncArbiter};
 use actix_web::{
     middleware::Logger,
@@ -14,8 +35,7 @@ use std::env;
 
 pub struct AppState {
     pub db: Addr<DbExecutor>,
-    pub orderbook: Addr<Orderbook>,
-    pub index: Addr<CompositeIndex>
+    pub orderbook: Addr<OrderBook>,
 }
 
 fn index(_state: Data<AppState>, _req: HttpRequest) -> &'static str {
@@ -37,7 +57,7 @@ pub fn start() {
     let bind_address = env::var("BIND_ADDRESS").expect("BIND_ADDRESS is not set");
 
     // Instantiate orderbook
-    let orderbook_adddress = OrderBook::Start();
+    let orderbook_address = OrderBook::Start();
 
     let state = Data::new(AppState {
         db: database_address.clone(),
