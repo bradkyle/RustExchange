@@ -24,7 +24,7 @@ pub struct In<U> {
 // Client Messages ↓
 
 #[derive(Debug, Validate, Deserialize)]
-pub struct RegisterUser {
+pub struct RegisterUserRequest {
     #[validate(email(message = "fails validation - is not a valid email address"))]
     pub email: String,
     #[validate(length(
@@ -36,7 +36,7 @@ pub struct RegisterUser {
 }
 
 #[derive(Debug, Validate, Deserialize)]
-pub struct LoginUser {
+pub struct LoginUserRequest {
     #[validate(email(message = "fails validation - is not a valid email address"))]
     pub email: String,
     #[validate(length(
@@ -48,7 +48,7 @@ pub struct LoginUser {
 }
 
 #[derive(Debug, Validate, Deserialize)]
-pub struct UpdateUser {
+pub struct UpdateUserRequest {
     #[validate(email)]
     pub email: Option<String>,
     #[validate(length(
@@ -60,9 +60,9 @@ pub struct UpdateUser {
 }
 
 #[derive(Debug)]
-pub struct UpdateUserOuter {
+pub struct UpdateUserRequestOuter {
     pub auth: Auth,
-    pub update_user: UpdateUser,
+    pub update_user: UpdateUserRequest,
 }
 
 // JSON response objects ↓
@@ -103,7 +103,7 @@ impl UserResponse {
 // Route handlers ↓
 
 pub fn register(
-    (form, state): (Json<In<RegisterUser>>, Data<AppState>),
+    (form, state): (Json<In<RegisterUserRequest>>, Data<AppState>),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let register_user = form.into_inner().user;
 
@@ -117,7 +117,7 @@ pub fn register(
 }
 
 pub fn login(
-    (form, state): (Json<In<LoginUser>>, Data<AppState>),
+    (form, state): (Json<In<LoginUserRequest>>, Data<AppState>),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let login_user = form.into_inner().user;
 
@@ -137,7 +137,7 @@ pub fn get_current(state: Data<AppState>, req: HttpRequest) -> impl Future<Item 
 
 pub fn update(
     state: Data<AppState>,
-    (form, req): (Json<In<UpdateUser>>, HttpRequest),
+    (form, req): (Json<In<UpdateUserRequest>>, HttpRequest),
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let update_user = form.into_inner().user;
 
@@ -146,7 +146,7 @@ pub fn update(
     result(update_user.validate())
         .from_err()
         .and_then(move |_| authenticate(&state, &req))
-        .and_then(move |auth| db.send(UpdateUserOuter { auth, update_user }).from_err())
+        .and_then(move |auth| db.send(UpdateUserRequestOuter { auth, update_user }).from_err())
         .and_then(|res| match res {
             Ok(res) => Ok(HttpResponse::Ok().json(res)),
             Err(e) => Ok(e.error_response()),

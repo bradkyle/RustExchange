@@ -3,6 +3,9 @@ use uuid::Uuid;
 
 use crate::schema::{instruments};
 
+// DB models
+// ----------------------------------------->
+
 #[derive(Debug, Queryable, Identifiable)]
 pub struct Instrument {
     pub id: Uuid,

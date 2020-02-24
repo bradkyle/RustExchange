@@ -3,21 +3,21 @@ use diesel::prelude::*;
 use libreauth::pass::HashBuilder;
 
 use super::DbExecutor;
-use crate::api::users::{LoginUser, RegisterUser, UpdateUserOuter, UserResponse};
+use crate::api::users::{LoginUserRequest, RegisterUserRequest, UpdateUserRequestOuter, UserResponse};
 use crate::models::{NewUser, User, UserChange};
 use crate::prelude::*;
 use crate::utils::{HASHER, PWD_SCHEME_VERSION};
 
 // message handler implementations ↓
 
-impl Message for RegisterUser {
+impl Message for RegisterUserRequest {
     type Result = Result<UserResponse>;
 }
 
-impl Handler<RegisterUser> for DbExecutor {
+impl Handler<RegisterUserRequest> for DbExecutor {
     type Result = Result<UserResponse>;
 
-    fn handle(&mut self, msg: RegisterUser, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: RegisterUserRequest, _: &mut Self::Context) -> Self::Result {
         use crate::schema::users::dsl::*;
 
         let new_user = NewUser {
@@ -37,14 +37,14 @@ impl Handler<RegisterUser> for DbExecutor {
     }
 }
 
-impl Message for LoginUser {
+impl Message for LoginUserRequest {
     type Result = Result<UserResponse>;
 }
 
-impl Handler<LoginUser> for DbExecutor {
+impl Handler<LoginUserRequest> for DbExecutor {
     type Result = Result<UserResponse>;
 
-    fn handle(&mut self, msg: LoginUser, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: LoginUserRequest, _: &mut Self::Context) -> Self::Result {
         use crate::schema::users::dsl::*;
 
         let provided_password_raw = &msg.password;
@@ -74,14 +74,14 @@ impl Handler<LoginUser> for DbExecutor {
     }
 }
 
-impl Message for UpdateUserOuter {
+impl Message for UpdateUserRequestOuter {
     type Result = Result<UserResponse>;
 }
 
-impl Handler<UpdateUserOuter> for DbExecutor {
+impl Handler<UpdateUserRequestOuter> for DbExecutor {
     type Result = Result<UserResponse>;
 
-    fn handle(&mut self, msg: UpdateUserOuter, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: UpdateUserRequestOuter, _: &mut Self::Context) -> Self::Result {
         use crate::schema::users::dsl::*;
 
         let auth = msg.auth;

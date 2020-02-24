@@ -1,5 +1,6 @@
 use crate::db::{new_pool, DbExecutor};
-use actix::prelude::{Addr, SyncArbiter};
+use crate::engine::orderbook::{OrderBook};
+use actix::prelude::{Addr, SyncArbiter, Arbiter};
 use actix_web::{
     middleware::Logger,
     web::Data,
@@ -11,17 +12,24 @@ use actix_web::{
 use actix_cors::Cors;
 use std::env;
 
+use actix::prelude::*;
 pub mod users;
 pub mod instruments;
+pub mod orders;
+
+use crate::utils::{
+    syncregistry::SyncRegistry,
+};
 
 // TODO move all functionality out
 
-pub struct AppState {
-    pub db: Addr<DbExecutor>,
+fn index(_state: Data<AppState>, _req: HttpRequest) -> &'static str {
+    "This is a engineering pathfinder for a novel derivative and it's exchange!"
 }
 
-fn index(_state: Data<AppState>, _req: HttpRequest) -> &'static str {
-    "Hello world!"
+pub struct AppState {
+    pub db: Addr<DbExecutor>,
+    pub ob: Addr<OrderBook>,
 }
 
 pub fn start() {
@@ -30,13 +38,23 @@ pub fn start() {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let database_pool = new_pool(database_url).expect("Failed to create pool.");
     let database_address = SyncArbiter::start(num_cpus::get(), move || DbExecutor(database_pool.clone()));
+    SyncRegistry::set(database_address);
 
     let bind_address = env::var("BIND_ADDRESS").expect("BIND_ADDRESS is not set");
 
+    // start sync arbiter with 3 threads
+    let orderbook_address = OrderBook::new(database_address.clone()).start();    
+
+    // Start MyActor in current thread
+    // let orderbook = OrderBook;
+    // let orderbook_address = SyncArbiter::start(1, || orderbook);
+
+    let state = Data::new(AppState {
+        db: database_address.clone(),
+        ob: orderbook_address.clone()
+    });
+
     HttpServer::new(move || {
-        let state = AppState {
-            db: database_address.clone(),
-        };
         let cors = match frontend_origin {
             Some(ref origin) => Cors::new()
                 .allowed_origin(origin)
@@ -48,11 +66,13 @@ pub fn start() {
                 .allowed_headers(vec![AUTHORIZATION, CONTENT_TYPE])
                 .max_age(3600),
         };
+
         App::new()
-            .register_data(Data::new(state))
+            .data(state.clone())
             .wrap(Logger::default())
             .wrap(cors)
             .configure(routes)
+
         })
         .bind(&bind_address)
         .unwrap_or_else(|_| panic!("Could not bind server to address {}", &bind_address))
@@ -77,14 +97,6 @@ fn routes(app: &mut web::ServiceConfig) {
                           .route(web::put().to_async(users::update))
                  )
 
-                 // Instrument routes *
-                 .service(web::resource("intruments")
-                          .route(web::get().to_async(instruments::list))
-                 )
-
-                 .service(web::resource("instruments/{symbol}")
-                          .route(web::get().to_async(instruments::get))
-                 )
 
                  // Margins/Account routes
             );
