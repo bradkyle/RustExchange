@@ -25,18 +25,6 @@ pub struct In<U> {
 
 #[derive(Debug, Validate, Deserialize)]
 pub struct RegisterUser {
-    #[validate(
-        length(
-            min = "1",
-            max = "20",
-            message = "fails validation - must be 1-20 characters long"
-        ),
-        regex(
-            path = "RE_USERNAME",
-            message = "fails validation - is not only alphanumeric/underscore characters"
-        )
-    )]
-    pub username: String,
     #[validate(email(message = "fails validation - is not a valid email address"))]
     pub email: String,
     #[validate(length(
@@ -61,18 +49,6 @@ pub struct LoginUser {
 
 #[derive(Debug, Validate, Deserialize)]
 pub struct UpdateUser {
-    #[validate(
-        length(
-            min = "1",
-            max = "20",
-            message = "fails validation - must be 1-20 characters long"
-        ),
-        regex(
-            path = "RE_USERNAME",
-            message = "fails validation - is not only alphanumeric/underscore characters"
-        )
-    )]
-    pub username: Option<String>,
     #[validate(email)]
     pub email: Option<String>,
     #[validate(length(
@@ -81,10 +57,6 @@ pub struct UpdateUser {
         message = "fails validation - must be 8-72 characters long"
     ))]
     pub password: Option<String>,
-    #[validate(length(min = "1", message = "fails validation - cannot be empty"))]
-    pub bio: Option<String>,
-    #[validate(url(message = "is not a URL"))]
-    pub image: Option<String>,
 }
 
 #[derive(Debug)]
@@ -104,9 +76,6 @@ pub struct UserResponse {
 pub struct UserResponseInner {
     pub email: String,
     pub token: String,
-    pub username: String,
-    pub bio: Option<String>,
-    pub image: Option<String>,
 }
 
 impl From<User> for UserResponse {
@@ -115,9 +84,6 @@ impl From<User> for UserResponse {
             user: UserResponseInner {
                 token: user.generate_jwt().unwrap(),
                 email: user.email,
-                username: user.username,
-                bio: user.bio,
-                image: user.image,
             },
         }
     }
@@ -129,9 +95,6 @@ impl UserResponse {
             user: UserResponseInner {
                 token: auth.token,
                 email: auth.user.email,
-                username: auth.user.username,
-                bio: auth.user.bio,
-                image: auth.user.image,
             },
         }
     }

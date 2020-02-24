@@ -2,11 +2,22 @@
 table! {
     users (id) {
         id -> Uuid,
-        username -> Text,
         email -> Varchar,
         password -> Text,
-        bio -> Nullable<Text>,
-        image -> Nullable<Text>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+table! {
+    instruments (id) {
+        id -> Uuid,
+        symbol -> Varchar,
+        margin_asset -> Varchar,
+        underlying_asset -> Varchar,
+        maker_fee -> Float,
+        taker_fee -> Float,
+        routing_fee -> Float,
         created_at -> Timestamp,
         updated_at -> Timestamp,
     }
@@ -14,4 +25,5 @@ table! {
 
 allow_tables_to_appear_in_same_query!(
     users,
+    instruments
 );

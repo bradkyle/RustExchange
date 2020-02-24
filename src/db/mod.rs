@@ -1,5 +1,6 @@
 mod auth;
 mod users;
+mod instruments;
 
 use crate::prelude::*;
 use actix::prelude::{Actor, SyncContext};

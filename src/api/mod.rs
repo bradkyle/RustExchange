@@ -12,6 +12,9 @@ use actix_cors::Cors;
 use std::env;
 
 pub mod users;
+pub mod instruments;
+
+// TODO move all functionality out
 
 pub struct AppState {
     pub db: Addr<DbExecutor>,
@@ -63,15 +66,41 @@ fn routes(app: &mut web::ServiceConfig) {
         .service(web::resource("/").to(index))
         .service(web::scope("/api")
                 // User routes ↓
-                .service(web::resource("users")
-                    .route(web::post().to_async(users::register))
-                )
-                .service(web::resource("users/login")
-                    .route(web::post().to_async(users::login))
-                )
-                .service(web::resource("user")
-                    .route(web::get().to_async(users::get_current))
-                    .route(web::put().to_async(users::update))
-                )
+                 .service(web::resource("users")
+                          .route(web::post().to_async(users::register))
+                 )
+                 .service(web::resource("users/login")
+                          .route(web::post().to_async(users::login))
+                 )
+                 .service(web::resource("user")
+                          .route(web::get().to_async(users::get_current))
+                          .route(web::put().to_async(users::update))
+                 )
+
+                 // Instrument routes *
+                 .service(web::resource("intruments")
+                          .route(web::get().to_async(instruments::list))
+                 )
+
+                 .service(web::resource("instruments/{symbol}")
+                          .route(web::get().to_async(instruments::get))
+                 )
+
+                 // Margins/Account routes
             );
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::test;
+
+    #[actix_rt::test]
+    async fn test_index_ok() {
+        let req = test::TestRequest::with_header("content-type", "text/plain").to_http_request();
+        let resp = index(req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+    }
+
 }

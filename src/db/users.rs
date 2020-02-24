@@ -21,11 +21,8 @@ impl Handler<RegisterUser> for DbExecutor {
         use crate::schema::users::dsl::*;
 
         let new_user = NewUser {
-            username: msg.username.clone(),
             email: msg.email.clone(),
             password: HASHER.hash(&msg.password)?,
-            bio: None,
-            image: None,
         };
 
         let conn = &self.0.get()?;
@@ -98,11 +95,8 @@ impl Handler<UpdateUserOuter> for DbExecutor {
         };
 
         let updated_user = UserChange {
-            username: update_user.username,
             email: update_user.email,
             password: updated_password,
-            bio: update_user.bio,
-            image: update_user.image,
         };
 
         match diesel::update(users.find(auth.user.id))
