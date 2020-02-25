@@ -5,6 +5,7 @@ pub mod comments;
 pub mod profiles;
 pub mod users;
 pub mod instruments;
+pub mod orders;
 
 #[database("diesel_postgres_pool")]
 pub struct Conn(diesel::PgConnection);

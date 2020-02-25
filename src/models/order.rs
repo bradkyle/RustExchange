@@ -22,7 +22,7 @@ pub struct Order {
 }
 
 impl Order {
-    pub fn attach(self, owner: User, instrument: Instrument) : OrderJson {
+    pub fn attach(self, owner: User, instrument: Instrument) -> OrderJson {
         OrderJson {
             id : self.id,
             userid : owner.id,

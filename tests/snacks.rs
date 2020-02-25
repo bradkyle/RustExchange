@@ -6,8 +6,8 @@ use common::*;
 use rocket::http::{ContentType, Status};
 use rocket::local::{Client, LocalResponse};
 
-const snack_TITLE: &str = "Test snack";
-const snack_BODY: &str = "This is obviously a test snack!";
+const SNACK_TITLE: &str = "Test snack";
+const SNACK_BODY: &str = "This is obviously a test snack!";
 
 #[test]
 /// Test snack creation.
@@ -24,7 +24,7 @@ fn test_post_snacks() {
         .expect("must have a 'title' field")
         .as_str();
 
-    assert_eq!(title, Some(snack_TITLE));
+    assert_eq!(title, Some(SNACK_TITLE));
 }
 
 #[test]
@@ -35,7 +35,7 @@ fn test_get_snack() {
 
     let slug = snack_slug(response);
     // Slug can contain random prefix, thus `start_with` instead of `assert_eq`!
-    assert!(slug.starts_with(&snack_TITLE.to_lowercase().replace(' ', "-")));
+    assert!(slug.starts_with(&SNACK_TITLE.to_lowercase().replace(' ', "-")));
 
     let response = &mut client.get(format!("/api/snacks/{}", slug)).dispatch();
 
@@ -45,7 +45,7 @@ fn test_get_snack() {
         .and_then(|snack| snack.get("body"))
         .and_then(|body| body.as_str());
 
-    assert_eq!(body, Some(snack_BODY));
+    assert_eq!(body, Some(SNACK_BODY));
 }
 
 #[test]
@@ -282,9 +282,9 @@ fn create_snack(client: &Client, token: Token) -> LocalResponse {
         .header(token_header(token))
         .body(json_string!({
                 "snack": {
-                    "title": snack_TITLE,
+                    "title": SNACK_TITLE,
                     "description": "Well, it's a test snack",
-                    "body": snack_BODY,
+                    "body": SNACK_BODY,
                     "tagList": ["test", "foo", "bar"]
                 }
         }))

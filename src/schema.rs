@@ -1,19 +1,4 @@
 table! {
-    snacks (id) {
-        id -> Int4,
-        slug -> Text,
-        title -> Text,
-        description -> Text,
-        body -> Text,
-        author -> Int4,
-        tag_list -> Array<Text>,
-        created_at -> Timestamptz,
-        updated_at -> Timestamptz,
-        favorites_count -> Int4,
-    }
-}
-
-table! {
     comments (id) {
         id -> Int4,
         body -> Text,
@@ -71,6 +56,21 @@ table! {
 }
 
 table! {
+    snacks (id) {
+        id -> Int4,
+        slug -> Text,
+        title -> Text,
+        description -> Text,
+        body -> Text,
+        author -> Int4,
+        tag_list -> Array<Text>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        favorites_count -> Int4,
+    }
+}
+
+table! {
     users (id) {
         id -> Int4,
         username -> Text,
@@ -81,20 +81,20 @@ table! {
     }
 }
 
-joinable!(snacks -> users (author));
 joinable!(comments -> snacks (snack));
 joinable!(comments -> users (author));
 joinable!(favorites -> snacks (snack));
 joinable!(favorites -> users (user));
 joinable!(orders -> instruments (instrumentid));
 joinable!(orders -> users (userid));
+joinable!(snacks -> users (author));
 
 allow_tables_to_appear_in_same_query!(
-    snacks,
     comments,
     favorites,
     follows,
     instruments,
     orders,
+    snacks,
     users,
 );

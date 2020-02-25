@@ -3,8 +3,8 @@ use crate::models::order::{Order, OrderJson};
 use crate::models::user::User;
 use crate::models::instrument::Instrument;
 use crate::schema::orders;
-use crate::schema::favorites;
-use crate::schema::follows;
+use crate::schema::instruments;
+use crate::schema::instruments::all_columns;
 use crate::schema::users;
 use diesel;
 use diesel::pg::PgConnection;
@@ -20,30 +20,30 @@ const DEFAULT_LIMIT: i64 = 20;
 #[table_name = "orders"]
 struct NewOrder<'a> {
     userid: i32,
-    instrumentid: i32,
-    side: &',
-    ord_status: &',
-    ord_type: &',
-    exec_inst: &',
-    time_in_force: &',
-    inital_qty: i32,
-    leaves_qty: i32,
-    price: f32,
+    instrumentid: &'a i32,
+    side: &'a str,
+    ord_status: &'a str,
+    ord_type: &'a str,
+    exec_inst: &'a str,
+    time_in_force: &'a str,
+    initial_qty: &'a i32,
+    leaves_qty: &'a i32,
+    price: &'a f32,
 }
 
 pub fn create(
     conn: &PgConnection,
     userid: i32,
-    instrumentid: i32,
-    side: &',
-    ord_status: &',
-    ord_type: &',
-    exec_inst: &',
-    time_in_force: &',
-    inital_qty: i32,
-    leaves_qty: i32,
-    price: f32,
+    instrumentid: &i32,
+    side: &str,
+    ord_type: &str,
+    exec_inst: &str,
+    time_in_force: &str,
+    initial_qty: &i32,
+    price: &f32,
 ) -> OrderJson {
+    let leaves_qty = initial_qty;
+    let ord_status = "new";
     let new_order = &NewOrder {
         userid,
         instrumentid,
@@ -52,7 +52,7 @@ pub fn create(
         ord_type,
         exec_inst,
         time_in_force,
-        inital_qty,
+        initial_qty,
         leaves_qty,
         price,
     };
@@ -62,11 +62,16 @@ pub fn create(
         .get_result::<User>(conn)
         .expect("Error loading owner");
 
+    let inst = instruments::table
+        .find(instrumentid)
+        .get_result::<Instrument>(conn)
+        .expect("Error loading owner");
+
     diesel::insert_into(orders::table)
         .values(new_order)
         .get_result::<Order>(conn)
         .expect("Error creating order")
-        .attach(owner, false)
+        .attach(owner, inst)
 }
 
 #[derive(FromForm, Default)]
@@ -91,6 +96,7 @@ pub fn find(conn: &PgConnection, params: &FindOrders, user_id: Option<i32>) -> (
         .select((
             orders::all_columns,
             users::all_columns,
+            instruments::all_columns,
         ))
         .into_boxed();
 
@@ -157,26 +163,25 @@ pub fn find_one(conn: &PgConnection, id: &i32, user_id: Option<i32>) -> Option<O
 #[derive(Deserialize, AsChangeset, Default, Clone)]
 #[table_name = "orders"]
 pub struct UpdateOrderData {
-    title: Option<String>,
-    description: Option<String>,
-    body: Option<String>,
-    #[serde(skip)]
-    slug: Option<String>,
-    #[serde(rename = "tagList")]
-    tag_list: Vec<String>,
+    userid: Option<i32>,
+    instrumentid: Option<i32>,
+    side: Option<String>,
+    ord_status: Option<String>,
+    exec_inst: Option<String>,
+    ord_type: Option<String>,
+    time_in_force: Option<String>,
+    leaves_qty: Option<i32>,
+    price: Option<f32>,
 }
 
 pub fn update(
     conn: &PgConnection,
-    slug: &str,
+    id: &i32,
     user_id: i32,
     mut data: UpdateOrderData,
 ) -> Option<OrderJson> {
-    if let Some(ref title) = data.title {
-        data.slug = Some(slugify(&title));
-    }
     // TODO: check for not_found
-    let order = diesel::update(orders::table.filter(orders::slug.eq(slug)))
+    let order = diesel::update(orders::table.filter(orders::id.eq(id)))
         .set(&data)
         .get_result(conn)
         .expect("Error loading order");
@@ -189,12 +194,14 @@ fn populate(conn: &PgConnection, order: Order) -> OrderJson {
     let owner = users::table
         .find(order.userid)
         .get_result::<User>(conn)
-        .expect("Error loading author");
+        .expect("Error loading owner");
 
     let instrument = instruments::table
         .find(order.instrumentid)
-        .get_result::<User>(conn)
-        .expect("Error loading author");
+        .get_result::<Instrument>(conn)
+        .expect("Error loading instrument");
 
     order.attach(owner, instrument)
 }
+
+// TODO unit tests
