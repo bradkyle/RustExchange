@@ -1,0 +1,31 @@
+dist: xenial
+sudo: required
+language: rust
+rust: nightly
+cache: cargo
+
+addons:
+  apt:
+    packages:
+      - libssl-dev # Required for tarpaulin
+
+before_cache: cargo install cargo-tarpaulin -f
+
+services:
+  - postgresql
+
+before_install:
+  - ## Provision database
+  - psql -U postgres -f init.sql
+  - command -v diesel || cargo install --force diesel_cli
+  - diesel migration run
+
+script:
+  - cargo test
+
+after_success: |
+    cargo tarpaulin --out Xml
+    bash <(curl -s https://codecov.io/bash)
+
+notifications:
+  email: false
