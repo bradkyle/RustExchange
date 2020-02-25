@@ -19,7 +19,7 @@ mod config;
 mod db;
 mod errors;
 mod models;
-mod routes;
+mod rest;
 mod schema;
 
 use rocket_contrib::json::JsonValue;
@@ -43,31 +43,31 @@ pub fn rocket() -> rocket::Rocket {
         .mount(
             "/api",
             routes![
-                routes::users::post_users,
-                routes::users::post_users_login,
-                routes::users::put_user,
-                routes::users::get_user,
-                routes::snacks::post_snacks,
-                routes::snacks::put_snacks,
-                routes::snacks::get_snack,
-                routes::snacks::delete_snack,
-                routes::snacks::favorite_snack,
-                routes::snacks::unfavorite_snack,
-                routes::snacks::get_snacks,
-                routes::snacks::get_snacks_feed,
-                routes::snacks::post_comment,
-                routes::snacks::get_comments,
-                routes::snacks::delete_comment,
-                routes::tags::get_tags,
-                routes::profiles::get_profile,
-                routes::profiles::follow,
-                routes::profiles::unfollow,
-                routes::instruments::get_instrument,
-                routes::instruments::get_instruments,
-                routes::orders::post_orders,
-                routes::orders::get_orders,
-                routes::orders::get_order,
-                routes::orders::put_orders
+                rest::users::post_users,
+                rest::users::post_users_login,
+                rest::users::put_user,
+                rest::users::get_user,
+                rest::snacks::post_snacks,
+                rest::snacks::put_snacks,
+                rest::snacks::get_snack,
+                rest::snacks::delete_snack,
+                rest::snacks::favorite_snack,
+                rest::snacks::unfavorite_snack,
+                rest::snacks::get_snacks,
+                rest::snacks::get_snacks_feed,
+                rest::snacks::post_comment,
+                rest::snacks::get_comments,
+                rest::snacks::delete_comment,
+                rest::tags::get_tags,
+                rest::profiles::get_profile,
+                rest::profiles::follow,
+                rest::profiles::unfollow,
+                rest::instruments::get_instrument,
+                rest::instruments::get_instruments,
+                rest::orders::post_orders,
+                rest::orders::get_orders,
+                rest::orders::get_order,
+                rest::orders::put_orders
             ],
         )
         .attach(db::Conn::fairing())

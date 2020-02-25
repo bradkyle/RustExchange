@@ -48,7 +48,7 @@ Authorization: Token :token
 
 # Create new snack.
 #
-# Other snack related routes need a slug, so consider disabled
+# Other snack related rest need a slug, so consider disabled
 # randomized slug suffixes: `cargo run --no-default-features`
 POST http://localhost:8000/api/snacks
 Content-Type: application/json
