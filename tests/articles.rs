@@ -1,4 +1,4 @@
-//! Test articles
+//! Test snacks
 
 mod common;
 
@@ -6,64 +6,64 @@ use common::*;
 use rocket::http::{ContentType, Status};
 use rocket::local::{Client, LocalResponse};
 
-const ARTICLE_TITLE: &str = "Test article";
-const ARTICLE_BODY: &str = "This is obviously a test article!";
+const snack_TITLE: &str = "Test snack";
+const snack_BODY: &str = "This is obviously a test snack!";
 
 #[test]
-/// Test article creation.
-fn test_post_articles() {
+/// Test snack creation.
+fn test_post_snacks() {
     let client = test_client();
     let token = login(&client);
-    let response = &mut create_article(&client, token);
+    let response = &mut create_snack(&client, token);
 
     let value = response_json_value(response);
     let title = value
-        .get("article")
-        .expect("must have an 'article' field")
+        .get("snack")
+        .expect("must have an 'snack' field")
         .get("title")
         .expect("must have a 'title' field")
         .as_str();
 
-    assert_eq!(title, Some(ARTICLE_TITLE));
+    assert_eq!(title, Some(snack_TITLE));
 }
 
 #[test]
-/// Test article retrieval.
-fn test_get_article() {
+/// Test snack retrieval.
+fn test_get_snack() {
     let client = test_client();
-    let response = &mut create_article(&client, login(&client));
+    let response = &mut create_snack(&client, login(&client));
 
-    let slug = article_slug(response);
+    let slug = snack_slug(response);
     // Slug can contain random prefix, thus `start_with` instead of `assert_eq`!
-    assert!(slug.starts_with(&ARTICLE_TITLE.to_lowercase().replace(' ', "-")));
+    assert!(slug.starts_with(&snack_TITLE.to_lowercase().replace(' ', "-")));
 
-    let response = &mut client.get(format!("/api/articles/{}", slug)).dispatch();
+    let response = &mut client.get(format!("/api/snacks/{}", slug)).dispatch();
 
     let value = response_json_value(response);
     let body = value
-        .get("article")
-        .and_then(|article| article.get("body"))
+        .get("snack")
+        .and_then(|snack| snack.get("body"))
         .and_then(|body| body.as_str());
 
-    assert_eq!(body, Some(ARTICLE_BODY));
+    assert_eq!(body, Some(snack_BODY));
 }
 
 #[test]
-/// Test article update.
-fn test_put_articles() {
+/// Test snack update.
+fn test_put_snacks() {
     let client = test_client();
     let token = login(&client);
-    let response = &mut create_article(&client, token.clone());
+    let response = &mut create_snack(&client, token.clone());
 
-    let slug = article_slug(response);
+    let slug = snack_slug(response);
 
-    let new_desc = "Well, it's an updated test article";
+    let new_desc = "Well, it's an updated test snack";
     let response = &mut client
-        .put(format!("/api/articles/{}", slug))
+        .put(format!("/api/snacks/{}", slug))
         .header(ContentType::JSON)
         .header(token_header(token))
         .body(json_string!({
-            "article": {
+            "snack": {
                 "description": new_desc,
                 "tagList": ["test", "foo"]
             }
@@ -72,24 +72,24 @@ fn test_put_articles() {
 
     let value = response_json_value(response);
     let description = value
-        .get("article")
-        .and_then(|article| article.get("description"))
+        .get("snack")
+        .and_then(|snack| snack.get("description"))
         .and_then(|description| description.as_str());
 
     assert_eq!(description, Some(new_desc));
 }
 
 #[test]
-/// Test article deletion.
-fn test_delete_article() {
+/// Test snack deletion.
+fn test_delete_snack() {
     let client = test_client();
     let token = login(&client);
-    let response = &mut create_article(&client, token.clone());
+    let response = &mut create_snack(&client, token.clone());
 
-    let slug = article_slug(response);
+    let slug = snack_slug(response);
 
     let response = &mut client
-        .delete(format!("/api/articles/{}", slug))
+        .delete(format!("/api/snacks/{}", slug))
         .header(token_header(token))
         .dispatch();
 
@@ -97,30 +97,30 @@ fn test_delete_article() {
 }
 
 #[test]
-/// Test that it's not possible to delete article anonymously.
-fn test_delete_article_anonymously() {
+/// Test that it's not possible to delete snack anonymously.
+fn test_delete_snack_anonymously() {
     let client = test_client();
     let token = login(&client);
-    let response = &mut create_article(&client, token.clone());
+    let response = &mut create_snack(&client, token.clone());
 
-    let slug = article_slug(response);
+    let slug = snack_slug(response);
 
-    let response = &mut client.delete(format!("/api/articles/{}", slug)).dispatch();
+    let response = &mut client.delete(format!("/api/snacks/{}", slug)).dispatch();
 
     assert_eq!(response.status(), Status::Forbidden);
 }
 
 #[test]
-/// Test putting article to favorites.
-fn test_favorite_article() {
+/// Test putting snack to favorites.
+fn test_favorite_snack() {
     let client = test_client();
     let token = login(&client);
-    let response = &mut create_article(&client, token.clone());
+    let response = &mut create_snack(&client, token.clone());
 
-    let slug = article_slug(response);
+    let slug = snack_slug(response);
 
     let response = &mut client
-        .post(format!("/api/articles/{}/favorite", slug))
+        .post(format!("/api/snacks/{}/favorite", slug))
         .header(token_header(token))
         .dispatch();
 
@@ -128,16 +128,16 @@ fn test_favorite_article() {
 }
 
 #[test]
-/// Test removing article from favorites .
-fn test_unfavorite_article() {
+/// Test removing snack from favorites .
+fn test_unfavorite_snack() {
     let client = test_client();
     let token = login(&client);
-    let response = &mut create_article(&client, token.clone());
+    let response = &mut create_snack(&client, token.clone());
 
-    let slug = article_slug(response);
+    let slug = snack_slug(response);
 
     let response = &mut client
-        .delete(format!("/api/articles/{}/favorite", slug))
+        .delete(format!("/api/snacks/{}/favorite", slug))
         .header(token_header(token))
         .dispatch();
 
@@ -145,52 +145,52 @@ fn test_unfavorite_article() {
 }
 
 #[test]
-/// Test getting multiple articles.
-fn test_get_articles() {
+/// Test getting multiple snacks.
+fn test_get_snacks() {
     let client = test_client();
     let token = login(&client);
-    create_article(&client, token);
+    create_snack(&client, token);
 
-    let response = &mut client.get("/api/articles").dispatch();
+    let response = &mut client.get("/api/snacks").dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
     let value = response_json_value(response);
     let num = value
-        .get("articlesCount")
+        .get("snacksCount")
         .and_then(|count| count.as_i64())
-        .expect("must have 'articlesCount' field");
+        .expect("must have 'snacksCount' field");
 
     assert!(num > 0);
 }
 
 #[test]
-/// Test getting multiple articles with params.
-fn test_get_articles_with_params() {
+/// Test getting multiple snacks with params.
+fn test_get_snacks_with_params() {
     let client = test_client();
     let token = login(&client);
-    create_article(&client, token);
+    create_snack(&client, token);
 
-    let url = "/api/articles?tag=foo&author=smoketest&favorited=smoketest&limit=1&offset=0";
+    let url = "/api/snacks?tag=foo&author=smoketest&favorited=smoketest&limit=1&offset=0";
     let response = &mut client.get(url).dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
     let value = response_json_value(response);
     value
-        .get("articlesCount")
+        .get("snacksCount")
         .and_then(|count| count.as_i64())
-        .expect("must have 'articlesCount' field");
+        .expect("must have 'snacksCount' field");
 }
 
 
 #[test]
-/// Test getting articles feed.
-fn test_get_articles_fedd() {
+/// Test getting snacks feed.
+fn test_get_snacks_fedd() {
     let client = test_client();
     let token = login(&client);
 
-    let url = "/api/articles/feed?limit=1&offset=0";
+    let url = "/api/snacks/feed?limit=1&offset=0";
     let response = &mut client
         .get(url)
         .header(token_header(token))
@@ -199,7 +199,7 @@ fn test_get_articles_fedd() {
     assert_eq!(response.status(), Status::Ok);
 
     let value = response_json_value(response);
-    value.get("articles").expect("must have 'articles' field");
+    value.get("snacks").expect("must have 'snacks' field");
 }
 
 #[test]
@@ -207,12 +207,12 @@ fn test_get_articles_fedd() {
 fn test_commenting() {
     let client = test_client();
     let token = login(&client);
-    let response = &mut create_article(&client, token.clone());
+    let response = &mut create_snack(&client, token.clone());
 
-    let slug = article_slug(response);
+    let slug = snack_slug(response);
 
     let response = &mut client
-        .post(format!("/api/articles/{}/comments", slug))
+        .post(format!("/api/snacks/{}/comments", slug))
         .header(ContentType::JSON)
         .header(token_header(token.clone()))
         .body(json_string!({
@@ -232,7 +232,7 @@ fn test_commenting() {
         .expect("must have comment 'id' field");
 
     let response = client
-        .delete(format!("/api/articles/{}/comments/{}", slug, comment_id))
+        .delete(format!("/api/snacks/{}/comments/{}", slug, comment_id))
         .header(token_header(token))
         .dispatch();
 
@@ -244,12 +244,12 @@ fn test_commenting() {
 fn test_get_comment() {
     let client = test_client();
     let token = login(&client);
-    let response = &mut create_article(&client, token.clone());
+    let response = &mut create_snack(&client, token.clone());
 
-    let slug = article_slug(response);
+    let slug = snack_slug(response);
 
     let response = &mut client
-        .get(format!("/api/articles/{}/comments", slug))
+        .get(format!("/api/snacks/{}/comments", slug))
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -260,31 +260,31 @@ fn test_get_comment() {
         .and_then(|comments| comments.as_array())
         .map(|comments| comments.len())
         .expect("must have 'comments' field");
-    // Newly created article must have no comments
+    // Newly created snack must have no comments
     assert_eq!(comments_num, 0);
 }
 
 // Utility functions
 
-fn article_slug(response: &mut LocalResponse) -> String {
+fn snack_slug(response: &mut LocalResponse) -> String {
     response_json_value(response)
-        .get("article")
-        .and_then(|article| article.get("slug"))
+        .get("snack")
+        .and_then(|snack| snack.get("slug"))
         .and_then(|slug| slug.as_str())
         .map(String::from)
-        .expect("Cannot extract article slug")
+        .expect("Cannot extract snack slug")
 }
 
-fn create_article(client: &Client, token: Token) -> LocalResponse {
+fn create_snack(client: &Client, token: Token) -> LocalResponse {
     let response = client
-        .post("/api/articles")
+        .post("/api/snacks")
         .header(ContentType::JSON)
         .header(token_header(token))
         .body(json_string!({
-                "article": {
-                    "title": ARTICLE_TITLE,
-                    "description": "Well, it's a test article",
-                    "body": ARTICLE_BODY,
+                "snack": {
+                    "title": snack_TITLE,
+                    "description": "Well, it's a test snack",
+                    "body": snack_BODY,
                     "tagList": ["test", "foo", "bar"]
                 }
         }))

@@ -1,4 +1,4 @@
-pub mod articles;
+pub mod snacks;
 pub mod profiles;
 pub mod tags;
 pub mod users;

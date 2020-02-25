@@ -15,7 +15,7 @@ Content-Type: application/json
 
 {"user": {"username": "tester", "email": "tester@realworld.io", "password": "rust is awesome"}}
 
-# Register user "stallman". He will write articles
+# Register user "stallman". He will write snacks
 POST http://localhost:8000/api/users
 Content-Type: application/json
 
@@ -44,19 +44,19 @@ Authorization: Token :token
 
 {"user": {"bio": "I made FSF"}}
 
-## Articles
+## snacks
 
-# Create new article.
+# Create new snack.
 #
-# Other article related routes need a slug, so consider disabled
+# Other snack related routes need a slug, so consider disabled
 # randomized slug suffixes: `cargo run --no-default-features`
-POST http://localhost:8000/api/articles
+POST http://localhost:8000/api/snacks
 Content-Type: application/json
 Authorization: Token :token
 
 {
-    "article": {
-        "title": "Test article",
+    "snack": {
+        "title": "Test snack",
         "description": "Just some tests",
         "body": "Lorem ipsum",
         "tagList": [
@@ -66,55 +66,55 @@ Authorization: Token :token
     }
 }
 
-# Get article anonymously
-GET http://localhost:8000/api/articles/test-article
+# Get snack anonymously
+GET http://localhost:8000/api/snacks/test-snack
 
-# Get article as current user
-GET http://localhost:8000/api/articles/test-article
+# Get snack as current user
+GET http://localhost:8000/api/snacks/test-snack
 Authorization: Token :token
 
-# Update article description and overwrite tags
-PUT http://localhost:8000/api/articles/test-article
+# Update snack description and overwrite tags
+PUT http://localhost:8000/api/snacks/test-snack
 Content-Type: application/json
 Authorization: Token :token
 
-{"article": {"description": "New description", "tagList": ["baz"]}}
+{"snack": {"description": "New description", "tagList": ["baz"]}}
 
-# Delete test article
-DELETE http://localhost:8000/api/articles/test-article
+# Delete test snack
+DELETE http://localhost:8000/api/snacks/test-snack
 Authorization: Token :token
 
-# Like article
-POST http://localhost:8000/api/articles/test-article/favorite
+# Like snack
+POST http://localhost:8000/api/snacks/test-snack/favorite
 Authorization: Token :token
 
-# Unlike article
-DELETE http://localhost:8000/api/articles/test-article/favorite
+# Unlike snack
+DELETE http://localhost:8000/api/snacks/test-snack/favorite
 Authorization: Token :token
 
 # Post comment
-POST http://localhost:8000/api/articles/test-article/comments
+POST http://localhost:8000/api/snacks/test-snack/comments
 Content-Type: application/json
 Authorization: Token :token
 
 {"comment": {"body": "This is amazing!"}}
 
 # Get comments
-GET http://localhost:8000/api/articles/test-article/comments
+GET http://localhost:8000/api/snacks/test-snack/comments
 
 # Delete comment. Get id from the "Get comments" and (setq my-restclient-comment-id 3)
-DELETE http://localhost:8000/api/articles/test-article/comments/:comment-id
+DELETE http://localhost:8000/api/snacks/test-snack/comments/:comment-id
 Authorization: Token :token
 
-## Articles
+## snacks
 # Auth is optional.
 
-# Get articles as current user
-GET http://localhost:8000/api/articles
+# Get snacks as current user
+GET http://localhost:8000/api/snacks
 Authorization: Token :token
 
-# Get articles feed. First login as "tester" and follow "stallman".
-GET http://localhost:8000/api/articles/feed
+# Get snacks feed. First login as "tester" and follow "stallman".
+GET http://localhost:8000/api/snacks/feed
 Authorization: Token :token
 
 ## Profiles

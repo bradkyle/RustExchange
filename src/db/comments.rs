@@ -1,6 +1,6 @@
 use crate::models::comment::{Comment, CommentJson};
 use crate::models::user::User;
-use crate::schema::articles;
+use crate::schema::snacks;
 use crate::schema::comments;
 use crate::schema::users;
 use diesel;
@@ -12,19 +12,19 @@ use diesel::prelude::*;
 struct NewComment<'a> {
     body: &'a str,
     author: i32,
-    article: i32,
+    snack: i32,
 }
 
 pub fn create(conn: &PgConnection, author: i32, slug: &str, body: &str) -> CommentJson {
-    let article_id = articles::table
-        .select(articles::id)
-        .filter(articles::slug.eq(slug))
+    let snack_id = snacks::table
+        .select(snacks::id)
+        .filter(snacks::slug.eq(slug))
         .get_result::<i32>(conn)
-        .expect("Cannot find article id");
+        .expect("Cannot find snack id");
     let new_comment = &NewComment {
         body,
         author,
-        article: article_id,
+        snack: snack_id,
     };
 
     let author = users::table
@@ -41,10 +41,10 @@ pub fn create(conn: &PgConnection, author: i32, slug: &str, body: &str) -> Comme
 
 pub fn find_by_slug(conn: &PgConnection, slug: &str) -> Vec<CommentJson> {
     let result = comments::table
-        .inner_join(articles::table)
+        .inner_join(snacks::table)
         .inner_join(users::table)
         .select((comments::all_columns, users::all_columns))
-        .filter(articles::slug.eq(slug))
+        .filter(snacks::slug.eq(slug))
         .get_results::<(Comment, User)>(conn)
         .expect("Cannot load comments");
 
@@ -59,14 +59,14 @@ pub fn delete(conn: &PgConnection, author: i32, slug: &str, comment_id: i32) {
     use diesel::select;
 
     let belongs_to_author_result = select(exists(
-        articles::table.filter(articles::slug.eq(slug).and(articles::author.eq(author))),
+        snacks::table.filter(snacks::slug.eq(slug).and(snacks::author.eq(author))),
     ))
     .get_result::<bool>(conn);
 
     if let Err(err) = belongs_to_author_result {
         match err {
             diesel::result::Error::NotFound => return,
-            _ => panic!("Cannot find article by author: {}", err),
+            _ => panic!("Cannot find snack by author: {}", err),
         }
     }
 

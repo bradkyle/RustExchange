@@ -1,4 +1,4 @@
-CREATE TABLE articles (
+CREATE TABLE snacks (
   id SERIAL PRIMARY KEY,
   slug TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,

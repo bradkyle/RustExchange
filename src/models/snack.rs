@@ -4,7 +4,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 
 #[derive(Queryable)]
-pub struct Article {
+pub struct snack {
     pub id: i32,
     pub slug: String,
     pub title: String,
@@ -17,9 +17,9 @@ pub struct Article {
     pub favorites_count: i32,
 }
 
-impl Article {
-    pub fn attach(self, author: User, favorited: bool) -> ArticleJson {
-        ArticleJson {
+impl snack {
+    pub fn attach(self, author: User, favorited: bool) -> snackJson {
+        snackJson {
             id: self.id,
             slug: self.slug,
             title: self.title,
@@ -37,7 +37,7 @@ impl Article {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ArticleJson {
+pub struct snackJson {
     pub id: i32,
     pub slug: String,
     pub title: String,

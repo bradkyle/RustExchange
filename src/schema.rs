@@ -1,5 +1,5 @@
 table! {
-    articles (id) {
+    snacks (id) {
         id -> Int4,
         slug -> Text,
         title -> Text,
@@ -17,7 +17,7 @@ table! {
     comments (id) {
         id -> Int4,
         body -> Text,
-        article -> Int4,
+        snack -> Int4,
         author -> Int4,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
@@ -25,9 +25,9 @@ table! {
 }
 
 table! {
-    favorites (user, article) {
+    favorites (user, snack) {
         user -> Int4,
-        article -> Int4,
+        snack -> Int4,
     }
 }
 
@@ -81,16 +81,16 @@ table! {
     }
 }
 
-joinable!(articles -> users (author));
-joinable!(comments -> articles (article));
+joinable!(snacks -> users (author));
+joinable!(comments -> snacks (snack));
 joinable!(comments -> users (author));
-joinable!(favorites -> articles (article));
+joinable!(favorites -> snacks (snack));
 joinable!(favorites -> users (user));
 joinable!(orders -> instruments (instrumentid));
 joinable!(orders -> users (userid));
 
 allow_tables_to_appear_in_same_query!(
-    articles,
+    snacks,
     comments,
     favorites,
     follows,

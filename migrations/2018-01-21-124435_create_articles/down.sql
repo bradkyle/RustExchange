@@ -1,1 +1,1 @@
-DROP TABLE articles;
+DROP TABLE snacks;

@@ -7,7 +7,7 @@ use serde::Serialize;
 pub struct Comment {
     pub id: i32,
     pub body: String,
-    pub article: i32,
+    pub snack: i32,
     pub author: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

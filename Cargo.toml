@@ -58,6 +58,6 @@ once_cell = "1.2.0"
 [features]
 default = ["random-suffix"]
 
-# Enable generation of random suffix when making article slug. This
-# allows having multiple articles with the same title.
+# Enable generation of random suffix when making snack slug. This
+# allows having multiple snacks with the same title.
 random-suffix = []

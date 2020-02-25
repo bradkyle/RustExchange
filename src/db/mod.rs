@@ -1,6 +1,6 @@
 use rocket_contrib::databases::diesel;
 
-pub mod articles;
+pub mod snacks;
 pub mod comments;
 pub mod profiles;
 pub mod users;

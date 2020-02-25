@@ -439,7 +439,7 @@
       "response": []
     },
     {
-      "name": "Create Article",
+      "name": "Create snack",
       "event": [{
         "listen": "test",
         "script": {
@@ -448,18 +448,18 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var article = res.article;",
-            "tests['should have article field'] = typeof(article) === 'object';",
+            "var snack = res.snack;",
+            "tests['should have snack field'] = typeof(snack) === 'object';",
             "",
-            "var expectedArticleFields = ['slug', 'title', 'description', 'body', 'tagList', 'createdAt', 'updatedAt', 'author', 'favorited', 'favoritesCount'];",
-            "expectedArticleFields.forEach(function(key) {",
-            "    tests[`article should have ${key} field`] = (typeof(article[key]) !== 'undefined');",
+            "var expectedsnackFields = ['slug', 'title', 'description', 'body', 'tagList', 'createdAt', 'updatedAt', 'author', 'favorited', 'favoritesCount'];",
+            "expectedsnackFields.forEach(function(key) {",
+            "    tests[`snack should have ${key} field`] = (typeof(snack[key]) !== 'undefined');",
             "});",
-            "tests['should have correct title'] = article.title === 'How to train your dragon';",
-            "tests['should have correct decription'] = article.description === 'Ever wonder how?';",
-            "tests['should have correct body'] = article.body === 'You have to believe';",
+            "tests['should have correct title'] = snack.title === 'How to train your dragon';",
+            "tests['should have correct decription'] = snack.description === 'Ever wonder how?';",
+            "tests['should have correct body'] = snack.body === 'You have to believe';",
             "",
-            "var author = article.author;",
+            "var author = snack.author;",
             "tests['should have author field'] = typeof(author) === 'object';",
             "var expectedAuthorFields = ['username', 'bio', 'image', 'following'];",
             "expectedAuthorFields.forEach(function(key) {",
@@ -467,9 +467,9 @@
             "});",
             "tests['author username should be correct'] = author.username === 'basicuser';",
             "",
-            "pm.globals.unset('articleSlug');",
-            "pm.globals.set('articleSlug', article.slug);",
-            "tests['global variable articleSlug should be set'] = pm.globals.get('articleSlug');",
+            "pm.globals.unset('snackSlug');",
+            "pm.globals.set('snackSlug', snack.slug);",
+            "tests['global variable snackSlug should be set'] = pm.globals.get('snackSlug');",
             ""
           ]
         }
@@ -487,22 +487,22 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"article\": {\n    \"title\": \"How to train your dragon\",\n    \"description\": \"Ever wonder how?\",\n    \"body\": \"You have to believe\",\n    \"tagList\": [\"reactjs\", \"angularjs\", \"dragons\"]\n  }\n}"
+          "raw": "{\n  \"snack\": {\n    \"title\": \"How to train your dragon\",\n    \"description\": \"Ever wonder how?\",\n    \"body\": \"You have to believe\",\n    \"tagList\": [\"reactjs\", \"angularjs\", \"dragons\"]\n  }\n}"
         },
         "url": {
-          "raw": "{{apiUrl}}/articles",
+          "raw": "{{apiUrl}}/snacks",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles"
+            "snacks"
           ]
         }
       },
       "response": []
     },
     {
-      "name": "Get Article",
+      "name": "Get snack",
       "event": [{
         "listen": "test",
         "script": {
@@ -511,18 +511,18 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var article = res.article;",
-            "tests['should have article field'] = typeof(article) === 'object';",
+            "var snack = res.snack;",
+            "tests['should have snack field'] = typeof(snack) === 'object';",
             "",
-            "var expectedArticleFields = ['slug', 'title', 'description', 'body', 'tagList', 'createdAt', 'updatedAt', 'author', 'favorited', 'favoritesCount'];",
-            "expectedArticleFields.forEach(function(key) {",
-            "    tests[`article should have ${key} field`] = (typeof(article[key]) !== 'undefined');",
+            "var expectedsnackFields = ['slug', 'title', 'description', 'body', 'tagList', 'createdAt', 'updatedAt', 'author', 'favorited', 'favoritesCount'];",
+            "expectedsnackFields.forEach(function(key) {",
+            "    tests[`snack should have ${key} field`] = (typeof(snack[key]) !== 'undefined');",
             "});",
-            "tests['should have correct title'] = article.title === 'How to train your dragon';",
-            "tests['should have correct decription'] = article.description === 'Ever wonder how?';",
-            "tests['should have correct body'] = article.body === 'You have to believe';",
+            "tests['should have correct title'] = snack.title === 'How to train your dragon';",
+            "tests['should have correct decription'] = snack.description === 'Ever wonder how?';",
+            "tests['should have correct body'] = snack.body === 'You have to believe';",
             "",
-            "var author = article.author;",
+            "var author = snack.author;",
             "tests['should have author field'] = typeof(author) === 'object';",
             "var expectedAuthorFields = ['username', 'bio', 'image', 'following'];",
             "expectedAuthorFields.forEach(function(key) {",
@@ -541,20 +541,20 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/{{articleSlug}}",
+          "raw": "{{apiUrl}}/snacks/{{snackSlug}}",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
-            "{{articleSlug}}"
+            "snacks",
+            "{{snackSlug}}"
           ]
         }
       },
       "response": []
     },
     {
-      "name": "Update Article",
+      "name": "Update snack",
       "event": [{
         "listen": "test",
         "script": {
@@ -563,18 +563,18 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var article = res.article;",
-            "tests['should have article field'] = typeof(article) === 'object';",
+            "var snack = res.snack;",
+            "tests['should have snack field'] = typeof(snack) === 'object';",
             "",
-            "var expectedArticleFields = ['slug', 'title', 'description', 'body', 'tagList', 'createdAt', 'updatedAt', 'author', 'favorited', 'favoritesCount'];",
-            "expectedArticleFields.forEach(function(key) {",
-            "    tests[`article should have ${key} field`] = (typeof(article[key]) !== 'undefined');",
+            "var expectedsnackFields = ['slug', 'title', 'description', 'body', 'tagList', 'createdAt', 'updatedAt', 'author', 'favorited', 'favoritesCount'];",
+            "expectedsnackFields.forEach(function(key) {",
+            "    tests[`snack should have ${key} field`] = (typeof(snack[key]) !== 'undefined');",
             "});",
-            "tests['should have correct title'] = article.title === 'new title';",
-            "tests['should have correct decription'] = article.description === 'new description';",
-            "tests['should have correct body'] = article.body === 'new body';",
+            "tests['should have correct title'] = snack.title === 'new title';",
+            "tests['should have correct decription'] = snack.description === 'new description';",
+            "tests['should have correct body'] = snack.body === 'new body';",
             "",
-            "var author = article.author;",
+            "var author = snack.author;",
             "tests['should have author field'] = typeof(author) === 'object';",
             "var expectedAuthorFields = ['username', 'bio', 'image', 'following'];",
             "expectedAuthorFields.forEach(function(key) {",
@@ -598,23 +598,23 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"article\": {\n    \"title\": \"new title\",\n    \"description\": \"new description\",\n    \"body\": \"new body\"\n  }\n}"
+          "raw": "{\n  \"snack\": {\n    \"title\": \"new title\",\n    \"description\": \"new description\",\n    \"body\": \"new body\"\n  }\n}"
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/{{articleSlug}}",
+          "raw": "{{apiUrl}}/snacks/{{snackSlug}}",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
-            "{{articleSlug}}"
+            "snacks",
+            "{{snackSlug}}"
           ]
         }
       },
       "response": []
     },
     {
-      "name": "Get All Articles",
+      "name": "Get All snacks",
       "event": [{
         "listen": "test",
         "script": {
@@ -623,9 +623,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             "",
             ""
           ]
@@ -642,19 +642,19 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles",
+          "raw": "{{apiUrl}}/snacks",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles"
+            "snacks"
           ]
         }
       },
       "response": []
     },
     {
-      "name": "Get All Articles Limit",
+      "name": "Get All snacks Limit",
       "event": [{
         "listen": "test",
         "script": {
@@ -663,9 +663,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             "",
             ""
           ]
@@ -682,12 +682,12 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles?limit=1",
+          "raw": "{{apiUrl}}/snacks?limit=1",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles"
+            "snacks"
           ],
           "query": [{
             "key": "limit",
@@ -698,7 +698,7 @@
       "response": []
     },
     {
-      "name": "Get All Articles Offset",
+      "name": "Get All snacks Offset",
       "event": [{
         "listen": "test",
         "script": {
@@ -707,9 +707,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             "",
             ""
           ]
@@ -726,12 +726,12 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles?offset=1",
+          "raw": "{{apiUrl}}/snacks?offset=1",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles"
+            "snacks"
           ],
           "query": [{
             "key": "offset",
@@ -742,7 +742,7 @@
       "response": []
     },
     {
-      "name": "Get All Articles by Tag",
+      "name": "Get All snacks by Tag",
       "event": [{
         "listen": "test",
         "script": {
@@ -751,9 +751,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             "",
             ""
           ]
@@ -770,12 +770,12 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles?tag=dragons",
+          "raw": "{{apiUrl}}/snacks?tag=dragons",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles"
+            "snacks"
           ],
           "query": [{
             "key": "tag",
@@ -786,7 +786,7 @@
       "response": []
     },
     {
-      "name": "Get All Articles by Author",
+      "name": "Get All snacks by Author",
       "event": [{
         "listen": "test",
         "script": {
@@ -795,9 +795,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             "",
             ""
           ]
@@ -814,12 +814,12 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles?author=basicuser",
+          "raw": "{{apiUrl}}/snacks?author=basicuser",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles"
+            "snacks"
           ],
           "query": [{
             "key": "author",
@@ -830,7 +830,7 @@
       "response": []
     },
     {
-      "name": "Get All Articles by Favorited",
+      "name": "Get All snacks by Favorited",
       "event": [{
         "listen": "test",
         "script": {
@@ -839,9 +839,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             "",
             ""
           ]
@@ -858,12 +858,12 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles?favorited=basicuser",
+          "raw": "{{apiUrl}}/snacks?favorited=basicuser",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles"
+            "snacks"
           ],
           "query": [{
             "key": "favorited",
@@ -883,9 +883,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             ""
           ]
         }
@@ -906,12 +906,12 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/feed",
+          "raw": "{{apiUrl}}/snacks/feed",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
+            "snacks",
             "feed"
           ]
         }
@@ -928,9 +928,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             ""
           ]
         }
@@ -951,12 +951,12 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/feed?limit=1",
+          "raw": "{{apiUrl}}/snacks/feed?limit=1",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
+            "snacks",
             "feed"
           ],
           "query": [{
@@ -977,9 +977,9 @@
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
             "console.log(res);",
-            "var articles = res.articles;",
-            "tests['should have articles field'] = typeof(articles) === 'object';",
-            "tests['should have articlesCount field'] = typeof(res.articlesCount) !== 'undefined';",
+            "var snacks = res.snacks;",
+            "tests['should have snacks field'] = typeof(snacks) === 'object';",
+            "tests['should have snacksCount field'] = typeof(res.snacksCount) !== 'undefined';",
             ""
           ]
         }
@@ -1000,12 +1000,12 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/feed?offset=1",
+          "raw": "{{apiUrl}}/snacks/feed?offset=1",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
+            "snacks",
             "feed"
           ],
           "query": [{
@@ -1066,13 +1066,13 @@
           "raw": "{\n  \"comment\": {\n    \"body\": \"His name was my name too.\"\n  }\n}"
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/{{articleSlug}}/comments",
+          "raw": "{{apiUrl}}/snacks/{{snackSlug}}/comments",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
-            "{{articleSlug}}",
+            "snacks",
+            "{{snackSlug}}",
             "comments"
           ]
         }
@@ -1103,13 +1103,13 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/{{articleSlug}}/comments",
+          "raw": "{{apiUrl}}/snacks/{{snackSlug}}/comments",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
-            "{{articleSlug}}",
+            "snacks",
+            "{{snackSlug}}",
             "comments"
           ]
         }
@@ -1144,13 +1144,13 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/{{articleSlug}}/comments/{{commentId}}",
+          "raw": "{{apiUrl}}/snacks/{{snackSlug}}/comments/{{commentId}}",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
-            "{{articleSlug}}",
+            "snacks",
+            "{{snackSlug}}",
             "comments",
             "{{commentId}}"
           ]
@@ -1159,7 +1159,7 @@
       "response": []
     },
     {
-      "name": "Favorite Article",
+      "name": "Favorite snack",
       "event": [{
         "listen": "test",
         "script": {
@@ -1167,10 +1167,10 @@
           "exec": [
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
-            "var article = res.article;",
-            "tests['should have article field'] = typeof(res.article) !== 'undefined';",
-            "tests['should be favorited'] = article.favorited === true;",
-            "tests['should have favoritesCount of one'] = article.favoritesCount === 1;",
+            "var snack = res.snack;",
+            "tests['should have snack field'] = typeof(res.snack) !== 'undefined';",
+            "tests['should be favorited'] = snack.favorited === true;",
+            "tests['should have favoritesCount of one'] = snack.favoritesCount === 1;",
             ""
           ]
         }
@@ -1191,13 +1191,13 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/{{articleSlug}}/favorite",
+          "raw": "{{apiUrl}}/snacks/{{snackSlug}}/favorite",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
-            "{{articleSlug}}",
+            "snacks",
+            "{{snackSlug}}",
             "favorite"
           ]
         }
@@ -1205,7 +1205,7 @@
       "response": []
     },
     {
-      "name": "Unfavorite Article",
+      "name": "Unfavorite snack",
       "event": [{
         "listen": "test",
         "script": {
@@ -1213,10 +1213,10 @@
           "exec": [
             "tests['should have status 200'] = pm.response.code === 200;",
             "res = pm.response.json();",
-            "var article = res.article;",
-            "tests['should have article field'] = typeof(res.article) !== 'undefined';",
-            "tests['should not be favorited'] = article.favorited === false;",
-            "tests['should have favoritesCount of zero'] = article.favoritesCount === 0;",
+            "var snack = res.snack;",
+            "tests['should have snack field'] = typeof(res.snack) !== 'undefined';",
+            "tests['should not be favorited'] = snack.favorited === false;",
+            "tests['should have favoritesCount of zero'] = snack.favoritesCount === 0;",
             ""
           ]
         }
@@ -1237,13 +1237,13 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/{{articleSlug}}/favorite",
+          "raw": "{{apiUrl}}/snacks/{{snackSlug}}/favorite",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
-            "{{articleSlug}}",
+            "snacks",
+            "{{snackSlug}}",
             "favorite"
           ]
         }
@@ -1286,7 +1286,7 @@
       "response": []
     },
     {
-      "name": "Delete Article",
+      "name": "Delete snack",
       "event": [{
         "listen": "test",
         "script": {
@@ -1308,13 +1308,13 @@
           "raw": ""
         },
         "url": {
-          "raw": "{{apiUrl}}/articles/{{articleSlug}}",
+          "raw": "{{apiUrl}}/snacks/{{snackSlug}}",
           "host": [
             "{{apiUrl}}"
           ],
           "path": [
-            "articles",
-            "{{articleSlug}}"
+            "snacks",
+            "{{snackSlug}}"
           ]
         }
       },
