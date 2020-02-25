@@ -1,6 +1,7 @@
 use crate::db::OffsetLimit;
 use crate::models::order::{Order, OrderJson};
 use crate::models::user::User;
+use crate::models::instrument::Instrument;
 use crate::schema::orders;
 use crate::schema::favorites;
 use crate::schema::follows;
@@ -18,103 +19,111 @@ const DEFAULT_LIMIT: i64 = 20;
 #[derive(Insertable)]
 #[table_name = "orders"]
 struct NewOrder<'a> {
-    title: &'a str,
-    description: &'a str,
-    body: &'a str,
-    slug: &'a str,
-    author: i32,
-    tag_list: &'a Vec<String>,
+    userid: i32,
+    instrumentid: i32,
+    side: &',
+    ord_status: &',
+    ord_type: &',
+    exec_inst: &',
+    time_in_force: &',
+    inital_qty: i32,
+    leaves_qty: i32,
+    price: f32,
 }
 
 pub fn create(
     conn: &PgConnection,
-    author: i32,
-    title: &str,
-    description: &str,
-    body: &str,
-    tag_list: &Vec<String>,
+    userid: i32,
+    instrumentid: i32,
+    side: &',
+    ord_status: &',
+    ord_type: &',
+    exec_inst: &',
+    time_in_force: &',
+    inital_qty: i32,
+    leaves_qty: i32,
+    price: f32,
 ) -> OrderJson {
     let new_order = &NewOrder {
-        title,
-        description,
-        body,
-        author,
-        tag_list,
-        slug: &slugify(title),
+        userid,
+        instrumentid,
+        side,
+        ord_status,
+        ord_type,
+        exec_inst,
+        time_in_force,
+        inital_qty,
+        leaves_qty,
+        price,
     };
 
-    let author = users::table
-        .find(author)
+    let owner = users::table
+        .find(userid)
         .get_result::<User>(conn)
-        .expect("Error loading author");
+        .expect("Error loading owner");
 
     diesel::insert_into(orders::table)
         .values(new_order)
         .get_result::<Order>(conn)
         .expect("Error creating order")
-        .attach(author, false)
-}
-
-fn slugify(title: &str) -> String {
-    if cfg!(feature = "random-suffix") {
-        format!("{}-{}", slug::slugify(title), generate_suffix(SUFFIX_LEN))
-    } else {
-        slug::slugify(title)
-    }
-}
-
-fn generate_suffix(len: usize) -> String {
-    let mut rng = thread_rng();
-    (0..len).map(|_| rng.sample(Alphanumeric)).collect()
+        .attach(owner, false)
 }
 
 #[derive(FromForm, Default)]
 pub struct FindOrders {
-    tag: Option<String>,
-    author: Option<String>,
-    /// favorited by user
-    favorited: Option<String>,
+    userid: Option<i32>,
+    instrumentid: Option<i32>,
+    side: Option<String>,
+    symbol: Option<String>,
+    ord_status: Option<String>,
+    exec_inst: Option<String>,
+    ord_type: Option<String>,
+    time_in_force: Option<String>,
     limit: Option<i64>,
     offset: Option<i64>,
 }
 
 pub fn find(conn: &PgConnection, params: &FindOrders, user_id: Option<i32>) -> (Vec<OrderJson>, i64) {
+
     let mut query = orders::table
         .inner_join(users::table)
-        .left_join(
-            favorites::table.on(orders::id
-                .eq(favorites::order)
-                .and(favorites::user.eq(user_id.unwrap_or(0)))), // TODO: refactor
-        )
+        .inner_join(instruments::table)
         .select((
             orders::all_columns,
             users::all_columns,
-            favorites::user.nullable().is_not_null(),
         ))
         .into_boxed();
-    if let Some(ref author) = params.author {
-        query = query.filter(users::username.eq(author))
+
+    if let Some(ref userid) = params.userid {
+        query = query.filter(users::id.eq(userid))
     }
-    if let Some(ref tag) = params.tag {
-        query = query.or_filter(orders::tag_list.contains(vec![tag]))
+
+    if let Some(ref instrumentid) = params.instrumentid {
+        query = query.filter(instruments::id.eq(instrumentid))
     }
-    if let Some(ref favorited) = params.favorited {
-        let result = users::table
-            .select(users::id)
-            .filter(users::username.eq(favorited))
-            .get_result::<i32>(conn);
-        match result {
-            Ok(id) => {
-                query = query.filter(diesel::dsl::sql(&format!(
-                    "orders.id IN (SELECT favorites.order FROM favorites WHERE favorites.user = {})",
-                    id
-                )));
-            }
-            Err(err) => match err {
-                diesel::result::Error::NotFound => return (vec![], 0),
-                _ => panic!("Cannot load favorited user: {}", err),
-            },
-        }
+
+    if let Some(ref side) = params.side {
+        query = query.filter(orders::side.eq(side))
+    }
+
+    if let Some(ref symbol) = params.symbol {
+        query = query.filter(instruments::symbol.eq(symbol))
+    }
+
+    if let Some(ref ord_status) = params.ord_status {
+        query = query.filter(orders::ord_status.eq(ord_status))
+    }
+
+    if let Some(ref exec_inst) = params.exec_inst {
+        query = query.filter(orders::exec_inst.eq(exec_inst))
+    }
+
+    if let Some(ref ord_type) = params.ord_type {
+        query = query.filter(orders::ord_type.eq(ord_type))
+    }
+
+    if let Some(ref time_in_force) = params.time_in_force {
+        query = query.filter(orders::time_in_force.eq(time_in_force))
     }
 
     query
@@ -122,11 +131,11 @@ pub fn find(conn: &PgConnection, params: &FindOrders, user_id: Option<i32>) -> (
             params.offset.unwrap_or(0),
             params.limit.unwrap_or(DEFAULT_LIMIT),
         )
-        .load_and_count::<(Order, User, bool)>(conn)
+        .load_and_count::<(Order, User, Instrument)>(conn)
         .map(|(res, count)| {
             (
                 res.into_iter()
-                    .map(|(order, author, favorited)| order.attach(author, favorited))
+                    .map(|(order, owner, instrument)| order.attach(owner, instrument))
                     .collect(),
                 count,
             )
@@ -134,87 +143,15 @@ pub fn find(conn: &PgConnection, params: &FindOrders, user_id: Option<i32>) -> (
         .expect("Cannot load orders")
 }
 
-pub fn find_one(conn: &PgConnection, slug: &str, user_id: Option<i32>) -> Option<OrderJson> {
+// TODO change to uuid
+pub fn find_one(conn: &PgConnection, id: &i32, user_id: Option<i32>) -> Option<OrderJson> {
     let order = orders::table
-        .filter(orders::slug.eq(slug))
+        .filter(orders::id.eq(id))
         .first::<Order>(conn)
         .map_err(|err| eprintln!("orders::find_one: {}", err))
         .ok()?;
 
-    let favorited = user_id
-        .map(|id| is_favorite(conn, &order, id))
-        .unwrap_or(false);
-
-    Some(populate(conn, order, favorited))
-}
-
-#[derive(FromForm, Default)]
-pub struct FeedOrders {
-    limit: Option<i64>,
-    offset: Option<i64>,
-}
-
-// select * from orders where author in (select followed from follows where follower = 7);
-pub fn feed(conn: &PgConnection, params: &FeedOrders, user_id: i32) -> Vec<OrderJson> {
-    orders::table
-        .filter(
-            orders::author.eq_any(
-                follows::table
-                    .select(follows::followed)
-                    .filter(follows::follower.eq(user_id)),
-            ),
-        )
-        .inner_join(users::table)
-        .left_join(
-            favorites::table.on(orders::id
-                .eq(favorites::order)
-                .and(favorites::user.eq(user_id))),
-        )
-        .select((
-            orders::all_columns,
-            users::all_columns,
-            favorites::user.nullable().is_not_null(),
-        ))
-        .limit(params.limit.unwrap_or(DEFAULT_LIMIT))
-        .offset(params.offset.unwrap_or(0))
-        .load::<(Order, User, bool)>(conn)
-        .expect("Cannot load feed")
-        .into_iter()
-        .map(|(order, author, favorited)| order.attach(author, favorited))
-        .collect()
-}
-
-pub fn favorite(conn: &PgConnection, slug: &str, user_id: i32) -> Option<OrderJson> {
-    conn.transaction::<_, diesel::result::Error, _>(|| {
-        let order = diesel::update(orders::table.filter(orders::slug.eq(slug)))
-            .set(orders::favorites_count.eq(orders::favorites_count + 1))
-            .get_result::<Order>(conn)?;
-
-        diesel::insert_into(favorites::table)
-            .values((
-                favorites::user.eq(user_id),
-                favorites::order.eq(order.id),
-            ))
-            .execute(conn)?;
-
-        Ok(populate(conn, order, true))
-    })
-    .map_err(|err| eprintln!("orders::favorite: {}", err))
-    .ok()
-}
-
-pub fn unfavorite(conn: &PgConnection, slug: &str, user_id: i32) -> Option<OrderJson> {
-    conn.transaction::<_, diesel::result::Error, _>(|| {
-        let order = diesel::update(orders::table.filter(orders::slug.eq(slug)))
-            .set(orders::favorites_count.eq(orders::favorites_count - 1))
-            .get_result::<Order>(conn)?;
-
-        diesel::delete(favorites::table.find((user_id, order.id))).execute(conn)?;
-
-        Ok(populate(conn, order, false))
-    })
-    .map_err(|err| eprintln!("orders::unfavorite: {}", err))
-    .ok()
+    Some(populate(conn, order))
 }
 
 #[derive(Deserialize, AsChangeset, Default, Clone)]
@@ -244,53 +181,20 @@ pub fn update(
         .get_result(conn)
         .expect("Error loading order");
 
-    let favorited = is_favorite(conn, &order, user_id);
-    Some(populate(conn, order, favorited))
+    Some(populate(conn, order))
 }
 
-pub fn delete(conn: &PgConnection, slug: &str, user_id: i32) {
-    let result = diesel::delete(
-        orders::table.filter(orders::slug.eq(slug).and(orders::author.eq(user_id))),
-    )
-    .execute(conn);
-    if let Err(err) = result {
-        eprintln!("orders::delete: {}", err);
-    }
-}
 
-fn is_favorite(conn: &PgConnection, order: &Order, user_id: i32) -> bool {
-    use diesel::dsl::exists;
-    use diesel::select;
-
-    select(exists(favorites::table.find((user_id, order.id))))
-        .get_result(conn)
-        .expect("Error loading favorited")
-}
-
-fn populate(conn: &PgConnection, order: Order, favorited: bool) -> OrderJson {
-    let author = users::table
-        .find(order.author)
+fn populate(conn: &PgConnection, order: Order) -> OrderJson {
+    let owner = users::table
+        .find(order.userid)
         .get_result::<User>(conn)
         .expect("Error loading author");
 
-    order.attach(author, favorited)
-}
+    let instrument = instruments::table
+        .find(order.instrumentid)
+        .get_result::<User>(conn)
+        .expect("Error loading author");
 
-pub fn tags(conn: &PgConnection) -> Vec<String> {
-    orders::table
-        .select(diesel::dsl::sql("distinct unnest(tag_list)"))
-        .load::<String>(conn)
-        .expect("Cannot load tags")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_generate_suffix() {
-        for len in 3..9 {
-            assert_eq!(generate_suffix(len).len(), len);
-        }
-    }
+    order.attach(owner, instrument)
 }

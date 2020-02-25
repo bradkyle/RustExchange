@@ -22,19 +22,21 @@ pub struct Order {
 }
 
 impl Order {
-    pub fn attach(self, author: User, favorited: bool) : OrderJson {
+    pub fn attach(self, owner: User, instrument: Instrument) : OrderJson {
         OrderJson {
-            id: self.id,
-            slug: self.slug,
-            title: self.title,
-            description: self.description,
-            body: self.body,
-            author,
-            tag_list: self.tag_list,
-            created_at: self.created_at.format(DATE_FORMAT).to_string(),
-            updated_at: self.updated_at.format(DATE_FORMAT).to_string(),
-            favorites_count: self.favorites_count,
-            favorited,
+            id : self.id,
+            userid : owner.id,
+            instrumentid : instrument.id, // TODO add extra data
+            side : self.side,
+            ord_status : self.ord_status,
+            ord_type : self.ord_type,
+            exec_inst : self.exec_inst,
+            time_in_force : self.time_in_force,
+            initial_qty : self.initial_qty,
+            leaves_qty : self.leaves_qty,
+            price : self.price,
+            created_at : self.created_at,
+            updated_at : self.updated_at,
         }
     }
 }
