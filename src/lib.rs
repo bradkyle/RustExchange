@@ -62,6 +62,8 @@ pub fn rocket() -> rocket::Rocket {
                 routes::profiles::get_profile,
                 routes::profiles::follow,
                 routes::profiles::unfollow,
+                routes::instruments::get_instrument,
+                routes::instruments::get_instruments
             ],
         )
         .attach(db::Conn::fairing())

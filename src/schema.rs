@@ -39,6 +39,38 @@ table! {
 }
 
 table! {
+    instruments (id) {
+        id -> Int4,
+        symbol -> Text,
+        margin_asset -> Text,
+        underlying_asset -> Text,
+        maker_fee -> Float4,
+        taker_fee -> Float4,
+        routing_fee -> Float4,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+table! {
+    orders (id) {
+        id -> Int4,
+        userid -> Int4,
+        instrumentid -> Int4,
+        side -> Text,
+        ord_status -> Text,
+        ord_type -> Text,
+        exec_inst -> Text,
+        time_in_force -> Text,
+        initial_qty -> Int4,
+        leaves_qty -> Int4,
+        price -> Float4,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+table! {
     users (id) {
         id -> Int4,
         username -> Text,
@@ -54,5 +86,15 @@ joinable!(comments -> articles (article));
 joinable!(comments -> users (author));
 joinable!(favorites -> articles (article));
 joinable!(favorites -> users (user));
+joinable!(orders -> instruments (instrumentid));
+joinable!(orders -> users (userid));
 
-allow_tables_to_appear_in_same_query!(articles, comments, favorites, follows, users,);
+allow_tables_to_appear_in_same_query!(
+    articles,
+    comments,
+    favorites,
+    follows,
+    instruments,
+    orders,
+    users,
+);
